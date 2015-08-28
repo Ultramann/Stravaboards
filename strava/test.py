@@ -25,9 +25,19 @@ for page in xrange(1, segment_effort_count/page_max + 2):
     r = requests.get(url_base + 'segments/{}/all_efforts'.format(segment), 
                      headers=extra_headers,
                      params={'per_page': page_max, 'page': page})
-    if len(r.json()) != 200: thing = r.json()
     all_efforts_list.extend(r.json())
 print 'Total time for list: {} seconds'.format(time.time() - t2)
+
+t3 = time.time()
+list_comp_ae = [effort for page in xrange(1, segment_effort_count/page_max + 2) 
+                    for effort in requests.get(url_base + 'segments/{}/all_efforts'.format(segment), 
+                                               headers=extra_headers, 
+                                               params={'per_page': page_max, 'page': page}).json()]
+print 'Total time for list comp: {} seconds'.format(time.time() - t3)
+
+    #Total time for functional: 37.2342720032 seconds
+    #Total time for list: 37.787842989 seconds
+    #Total time for list comp: 37.916118145 seconds
 
     #Total time for functional: 27.9667088985 seconds
     #Total time for list: 29.4919791222 seconds
