@@ -1,7 +1,7 @@
 import json
 from selenium import webdriver
 
-with open('./strava.json') as f:
+with open('./.strava.json') as f:
     data = json.loads(f.read())
     email, password = data["EMAIL"], data["PASSWORD"]
 
