@@ -6,7 +6,7 @@ with open('./strava.json') as f:
     email, password = data["EMAIL"], data["PASSWORD"]
 
 def get_driver(url_extension):
-    strava_segment_search_url = 'https://www.strava.com/' + url_extension
+    strava_segment_search_url = 'https://www.strava.com' + url_extension
     driver = webdriver.PhantomJS()
     driver.get(strava_segment_search_url)
     return driver

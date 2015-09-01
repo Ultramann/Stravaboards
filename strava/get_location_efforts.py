@@ -29,7 +29,7 @@ def filter_segments(soup):
     return [int(seg[0]) for seg in segments if len(seg)]
 
 def get_segments(location):
-    driver = get_logged_in_driver('segments/search')
+    driver = get_logged_in_driver('/segments/search')
     enter_search(driver, location)
     soup = BeautifulSoup(driver.page_source, 'html.parser')
     os.remove('ghostdriver.log')
