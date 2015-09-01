@@ -43,3 +43,4 @@ def get_segment_efforts(segment, num_efforts=None):
                 for effort in requests.get(url_base + 'segments/{}/all_efforts'.format(segment), 
                                            headers=extra_headers, 
                                            params={'per_page': page_max, 'page': page}).json()]
+
