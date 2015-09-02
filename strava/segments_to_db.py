@@ -1,10 +1,29 @@
+import json
+import requests
 from pymongo import MongoClient
 from multiprocessing import Pool
-from strava_lib import get_segment_efforts
+
+def get_header():
+    with open('./.strava.json') as f:
+        data = json.loads(f.read())
+        access_token = data["TOKEN"]
+    return  {'Authorization' : 'Bearer %s' % access_token}
 
 client = MongoClient()
 db = client['Strava']
 table = db['Segment_Efforts']
+
+def get_segment_efforts(segment):
+    header = get_header()
+    url_base = 'https://www.strava.com/api/v3/'
+    page_max = 200
+    seg_eff_cnt = requests.get(url_base + 'segments/{}'.format(segment), 
+                               headers=header).json()['effort_count']
+
+    return [effort for page in xrange(1, seg_eff_cnt/page_max + 2) 
+                for effort in requests.get(url_base + 'segments/{}/all_efforts'.format(segment), 
+                                           headers=header, 
+                                           params={'per_page': page_max, 'page': page}).json()]
 
 def insert_effort(effort):
     if (isinstance(effort, dict) and isinstance(effort['activity'], dict)):
@@ -27,3 +46,4 @@ if __name__ == '__main__':
     for i, segment in enumerate(test_segments):
         print 'Starting segment {}...'.format(i)
         get_insert_segment_efforts(segment)
+
