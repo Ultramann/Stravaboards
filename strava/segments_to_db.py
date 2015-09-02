@@ -1,22 +1,22 @@
+import time
 import json
 import requests
 from pymongo import MongoClient
 from multiprocessing import Pool
 
-def get_header():
-    with open('./.strava.json') as f:
-        data = json.loads(f.read())
-        access_token = data["TOKEN"]
-    return  {'Authorization' : 'Bearer %s' % access_token}
+with open('./.strava.json') as f:
+    data = json.loads(f.read())
+    access_token = data["TOKEN"]
+header =  {'Authorization' : 'Bearer %s' % access_token}
+
+url_base = 'https://www.strava.com/api/v3/'
+page_max = 200
 
 client = MongoClient()
 db = client['Strava']
 table = db['Segment_Efforts']
 
 def get_segment_efforts(segment):
-    header = get_header()
-    url_base = 'https://www.strava.com/api/v3/'
-    page_max = 200
     seg_eff_cnt = requests.get(url_base + 'segments/{}'.format(segment), 
                                headers=header).json()['effort_count']
 
@@ -31,11 +31,14 @@ def insert_effort(effort):
             table.insert_one(effort)
 
 def get_insert_segment_efforts(segment):
+    t1 = time.time()
     efforts = get_segment_efforts(segment)
-    print '   Finished collecting efforts'
+    print '   Retrieved {} efforts in {} seconds'.format(len(efforts), time.time() - t1)
+    t2 = time.time()
     pool = Pool(processes=4)
     pool.map(insert_effort, efforts)
-    print '   Finished inserting efforts'
+    print '     Inserting them into database in {} seconds'.format(time.time() - t2)
+    return len(efforts)
 
 if __name__ == '__main__':
     segments = [6366843, 617239, 904763, 1173191, 1723, 611363, 563888, 2386958, 3490822, 5264177, 
@@ -43,7 +46,10 @@ if __name__ == '__main__':
                 1549153, 954038, 618199, 1741438, 719341, 638232, 949453, 997901, 3883126, 7197693]
     test_segments = [825868, 298337, 1741438]
     
+    total_efforts = 0
+    t_init = time.time()
     for i, segment in enumerate(test_segments):
         print 'Starting segment {}...'.format(i)
-        get_insert_segment_efforts(segment)
-
+        total_efforts += get_insert_segment_efforts(segment)
+    t_mins = (t_init - time.time())/60
+    print 'Retrieved and inserted {} efforts in {} minutes'.format(total_efforts, t_mins)
