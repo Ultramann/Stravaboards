@@ -41,18 +41,20 @@ def get_insert_segment_efforts(segment):
     t2 = time.time()
     pool = Pool(processes=3)
     pool.map(insert_effort, efforts)
-    print '   Inserting them into database in {:.2f} minutes'.format((time.time() - t2)/60)
+    print '   Inserted them into database in {:.2f} minutes'.format((time.time() - t2)/60)
     return len(efforts)
 
 if __name__ == '__main__':
-    segments = [3490822, 5264177, 
+    moab_segments = [825868, 7966813, 7318092, 759935, 3919800, 3783490, 1310387, 721666, 763617, 
+                     2575735, 2575792, 4009312, 2211929, 655907, 1167465, 1552300, 712936, 9395178, 
+                     721666, 9197280, 3783466, 8483439, 3783439, 4000958, 7059167, 9918993]
+    comp_ca_segments = [6366843, 617239, 904763, 1173191, 1723, 611363, 563888, 3490822, 5264177, 
                 626742, 8643847, 1154584, 3664904, 7330795, 809335, 857898, 954038, 600237, 1262370,
                 1549153, 954038, 618199, 1741438, 719341, 638232, 949453, 997901, 3883126, 7197693]
-    finished_segments = [6366843, 617239, 904763, 1173191, 1723, 611363, 563888]
     
     total_efforts = 0
     t_init = time.time()
-    for i, segment in enumerate(segments):
+    for i, segment in enumerate(moab_segments):
         print 'Starting segment {}...'.format(i)
         total_efforts += get_insert_segment_efforts(segment)
     t_mins = (time.time() - t_init)/60
