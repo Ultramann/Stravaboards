@@ -1,2 +1,3 @@
-# Exclude .pyc files
+.strava.json
+/.useless
 *.pyc
