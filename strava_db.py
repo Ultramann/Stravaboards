@@ -33,6 +33,7 @@ def remove_useless_columns(df):
 def get_clean_df():
     df = get_big_df()
     make_id_cols(df)
+    get_segment_info(df)
     make_date_col(df)
     engineer_features(df)
     remove_useless_columns(df)
