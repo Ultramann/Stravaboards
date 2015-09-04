@@ -27,7 +27,7 @@ def engineer_features(df):
 def remove_useless_columns(df):
     columns = ['max_heartrate', 'resource_state', 'name', 'kom_rank', 'start_index', 'pr_rank',
                'id', '_id', 'achievements', 'end_index', 'segment', 'athlete', 'start_date', 
-               'start_date_local', 'average_cadence', 'average_heartrate']
+               'start_date_local', 'average_cadence', 'average_heartrate', 'activity']
     df.drop(columns, inplace=True, axis=1)
 
 def get_clean_df():
