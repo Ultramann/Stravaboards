@@ -25,7 +25,7 @@ def get_segment_efforts(segment):
     seg_eff_cnt = requests.get(url_base + 'segments/{}'.format(segment), 
                                headers=header).json()['effort_count']
 
-    pool = Pool(processes=3)
+    pool = Pool(processes=4)
     all_efforts = pool.map(get_page_efforts, range(1, seg_eff_cnt/page_max + 2))
     return [effort for effort_list in all_efforts for effort in effort_list]
 
@@ -39,7 +39,7 @@ def get_insert_segment_efforts(segment):
     efforts = get_segment_efforts(segment)
     print '   Retrieved {} efforts in {:.2f} minutes'.format(len(efforts), (time.time() - t1)/60)
     t2 = time.time()
-    pool = Pool(processes=3)
+    pool = Pool(processes=4)
     pool.map(insert_effort, efforts)
     print '   Inserted them into database in {:.2f} minutes'.format((time.time() - t2)/60)
     return len(efforts)
