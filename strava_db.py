@@ -15,7 +15,7 @@ def make_id_cols(df):
 def get_segment_info(df):
     categories = ['average_grade', 'distance', 'elevation_low', 'elevation_high', 'maximum_grade']
     for category in categories:
-        df['seg_'.format(category)] = df.segment.apply(lambda x: x[category])
+        df['seg_{}'.format(category)] = df.segment.apply(lambda x: x[category])
 
 def make_date_col(df):
     df['date'] = pd.to_datetime(df.start_date_local)
