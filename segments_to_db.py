@@ -30,9 +30,10 @@ def get_segment_efforts(segment):
     return [effort for effort_list in all_efforts for effort in effort_list]
 
 def insert_effort(effort):
-    if (isinstance(effort, dict) and isinstance(effort['activity'], dict)):
-        if not table.find_one({'activity.id': effort['activity']['id']}):
-            table.insert_one(effort)
+    #if (isinstance(effort, dict) and isinstance(effort['activity'], dict)):
+    #    if not table.find_one({'activity.id': effort['activity']['id']}):
+    if not table.find_one({'_id': effort['_id']}):
+        table.insert_one(effort)
 
 def get_insert_segment_efforts(segment):
     t1 = time.time()
