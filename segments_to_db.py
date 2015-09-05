@@ -29,6 +29,9 @@ class StravaSegmentsGetter(object):
 
     def get_insert_efforts(self):
         for i, segment in enumerate(self.segments, 1):
+            if self.table.find_one({'segment.id': segment}):
+                print '{}) Skipped segment {}, already in database'.format(1, segment)
+                continue
             print '{}) Starting segment {}'.format(i, segment)
             self.current_segment = segment
             self.get_insert_current_segment_efforts()
@@ -41,8 +44,8 @@ class StravaSegmentsGetter(object):
         t = time.time()
         self.current_efforts = self.get_current_segment_efforts()
         stdout.flush()
-        stdout.write('   Retrieved {} efforts in {:.2f} minutes  '.format(len(self.current_efforts), 
-                                                                       (time.time() - t)/60))
+        print '   Retrieved {} efforts in {:.2f} minutes      '.format(len(self.current_efforts), 
+                                                                         (time.time() - t)/60)
 
     def get_current_segment_efforts(self):
         self.current_segment_effort_count = requests.get(self.url_base + 
@@ -72,6 +75,7 @@ class StravaSegmentsGetter(object):
     def insert_time_current_segment_efforts(self):
         t = time.time()
         self.table.insert_many(self.current_efforts)
+        stdout.flush()
         print '   Inserted them into database in {:.2f} seconds'.format(time.time() - t)
         self.total_efforts += len(self.current_efforts)
 
