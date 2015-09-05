@@ -5,11 +5,15 @@ import pandas as pd
 from sys import stdout
 from pymongo import MongoClient
 
-def get_big_df():
+def get_big_df(size):
     client = MongoClient()
     db = client['Strava']
     table = db['segment_efforts']
-    return pd.DataFrame(list(table.find()))
+    if size:
+        df = pd.DataFrame(list(table.find().limit(size)))
+    else:
+        df = pd.DataFrame(list(table.find()))
+    return df
 
 def make_id_cols(df):
     columns = ['athlete', 'segment', 'activity']
@@ -34,8 +38,8 @@ def remove_useless_columns(df):
                'start_date_local', 'average_cadence', 'average_heartrate', 'activity']
     df.drop(columns, inplace=True, axis=1)
 
-def get_clean_df():
-    df = get_big_df()
+def get_clean_df(size=None):
+    df = get_big_df(size)
     make_id_cols(df)
     get_segment_info(df)
     make_date_col(df)
