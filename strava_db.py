@@ -8,7 +8,7 @@ from pymongo import MongoClient
 def get_big_df():
     client = MongoClient()
     db = client['Strava']
-    table = db['Segment_Efforts']
+    table = db['segment_efforts']
     return pd.DataFrame(list(table.find()))
 
 def make_id_cols(df):
