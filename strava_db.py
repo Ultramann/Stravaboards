@@ -8,7 +8,7 @@ def get_big_df():
     return pd.DataFrame(list(table.find()))
 
 def make_id_cols(df):
-    columns = ['athlete', 'segment']
+    columns = ['athlete', 'segment', 'activity']
     for column in columns:
         df['{}_id'.format(column)] = df[column].apply(lambda x: x['id'])
 
