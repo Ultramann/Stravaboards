@@ -41,11 +41,11 @@ class StravaSegmentsGetter(object):
         self.insert_time_current_segment_efforts()
 
     def get_time_current_segment_efforts(self):
-        t = time.time()
+        self.time = time.time()
         self.current_efforts = self.get_current_segment_efforts()
         stdout.flush()
-        print '   Retrieved {} efforts in {:.2f} minutes      '.format(len(self.current_efforts), 
-                                                                         (time.time() - t)/60)
+        print '   Retrieved {} efforts in {:.2f} minutes '.format(len(self.current_efforts), 
+                                                                  (time.time() - t)/60) + ' '*50
 
     def get_current_segment_efforts(self):
         self.current_segment_effort_count = requests.get(self.url_base + 
@@ -68,9 +68,10 @@ class StravaSegmentsGetter(object):
 
     def update_effort_acquisition(self, page):
         percent_complete = float(page) / (self.current_segment_effort_count/self.page_max + 2) * 100
+        time_elapsed = time.time() - self.time
+        eta = (time_elapsed * 1/(percent_complete/100)) - time_elapsed if page else 10000
         stdout.flush()
-        stdout.write('   Retrieving {} efforts: {:.1f}% complete \r'
-                     .format(self.current_segment_effort_count, percent_complete))
+        stdout.write('   Retrieving {} efforts: {:.1f}% complete --- Estimated time remaining: {:.1f} seconds                 \r'.format(self.current_segment_effort_count, percent_complete, eta))
 
     def insert_time_current_segment_efforts(self):
         t = time.time()
@@ -100,4 +101,4 @@ if __name__ == '__main__':
                 774591, 351211}
     
     segment_getter = StravaSegmentsGetter()
-    segment_getter.get_segments_efforts(list(segments))
+    segment_getter.get_segments_efforts(segments)
