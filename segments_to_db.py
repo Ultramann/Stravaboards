@@ -4,54 +4,81 @@ import requests
 from sys import stdout
 from pymongo import MongoClient
 
-with open('./.strava.json') as f:
-    data = json.loads(f.read())
-    access_token = data["TOKEN"]
-header =  {'Authorization' : 'Bearer %s' % access_token}
+class StravaSegmentsGetter(object):
+    def __init__(self):
+        with open('./.strava.json') as f:
+            data = json.loads(f.read())
+            access_token = data["TOKEN"]
+        client = MongoClient()
+        db = client['Strava']
+        self.table = db['segment_efforts']
+        self.header =  {'Authorization' : 'Bearer %s' % access_token}
+        self.url_base = 'https://www.strava.com/api/v3/'
+        self.page_max = 200
 
-url_base = 'https://www.strava.com/api/v3/'
-page_max = 200
+    def get_segments_efforts(self, segments):
+        # Initialize variables for retrieval process
+        self.segments = segments
+        self.total_efforts = 0
+        self.current_segment = None
 
-client = MongoClient()
-db = client['Strava']
-table = db['segment_efforts']
+        # Start retrieval process
+        self.time_init = time.time()
+        self.get_insert_efforts()
+        self.print_final_metrics()
 
-def update_effort_acquisition(segment_effort_count, page):
-    percent_complete = float(page) / (segment_effort_count/page_max + 2) * 100
-    stdout.flush()
-    stdout.write('   Retrieving {} efforts: {:.1f}% complete \r'.format(segment_effort_count,
-                                                                        percent_complete))
+    def get_insert_efforts(self):
+        for i, segment in enumerate(self.segments, 1):
+            print '{}) Starting segment {}'.format(i, segment)
+            self.current_segment = segment
+            self.get_insert_current_segment_efforts()
 
-def get_page_efforts(page, segment, segment_effort_count):
-    page_efforts = requests.get(url_base + 'segments/{}/all_efforts'.format(segment), 
-                                headers=header, 
-                                params={'per_page': page_max, 'page': page}).json()
-    update_effort_acquisition(segment_effort_count, page)
-    time.sleep(.5)
-    return page_efforts
+    def get_insert_current_segment_efforts(self):
+        self.get_time_current_segment_efforts()
+        self.insert_time_current_segment_efforts()
 
-def get_segment_efforts(segment):
-    segment_effort_count = requests.get(url_base + 'segments/{}'.format(segment), 
-                                        headers=header).json()['effort_count']
-    update_effort_acquisition(segment_effort_count, 0)
-    necessary_calls = range(1, segment_effort_count/page_max + 2)
-    return [effort for page in necessary_calls 
-            for effort in get_page_efforts(page, segment, segment_effort_count) 
-                                                    if isinstance(effort, dict)]
+    def get_time_current_segment_efforts(self):
+        t = time.time()
+        self.current_efforts = self.get_current_segment_efforts()
+        stdout.flush()
+        stdout.write('   Retrieved {} efforts in {:.2f} minutes  '.format(len(self.current_efforts), 
+                                                                       (time.time() - t)/60))
 
-def insert_efforts(efforts):
-    table.insert_many(efforts)
+    def get_current_segment_efforts(self):
+        self.current_segment_effort_count = requests.get(self.url_base + 
+                                            'segments/{}'.format(self.current_segment), 
+                                            headers=self.header).json()['effort_count']
+        self.update_effort_acquisition(0)
+        necessary_calls = range(1, self.current_segment_effort_count/self.page_max + 2)
+        return [effort for page in necessary_calls 
+                for effort in self.get_page_efforts(page)
+                if isinstance(effort, dict)]
 
-def get_insert_segment_efforts(segment):
-    t1 = time.time()
-    efforts = get_segment_efforts(segment)
-    stdout.flush()
-    stdout.write('   Retrieved {} efforts in {:.2f} minutes'.format(len(efforts), 
-                                                                   (time.time() - t1)/60))
-    t2 = time.time()
-    insert_efforts(efforts)
-    print '   Inserted them into database in {:.2f} seconds'.format(time.time() - t2)
-    return len(efforts)
+    def get_page_efforts(self, page):
+        page_efforts = requests.get(self.url_base + 
+                                    'segments/{}/all_efforts'.format(self.current_segment), 
+                                    headers=self.header, 
+                                    params={'per_page': self.page_max, 'page': page}).json()
+        self.update_effort_acquisition(page)
+        time.sleep(.5)
+        return page_efforts
+
+    def update_effort_acquisition(self, page):
+        percent_complete = float(page) / (self.current_segment_effort_count/self.page_max + 2) * 100
+        stdout.flush()
+        stdout.write('   Retrieving {} efforts: {:.1f}% complete \r'
+                     .format(self.current_segment_effort_count, percent_complete))
+
+    def insert_time_current_segment_efforts(self):
+        t = time.time()
+        self.table.insert_many(self.current_efforts)
+        print '   Inserted them into database in {:.2f} seconds'.format(time.time() - t)
+        self.total_efforts += len(self.current_efforts)
+
+    def print_final_metrics(self):
+        total_mins = (time.time() - self.time_init)/60
+        print 'Retrieved and inserted {} efforts in {:.2f} minutes'.format(self.total_efforts, 
+                                                                           total_mins)
 
 if __name__ == '__main__':
     segments = {125, 5642079, 5857327, 4793848, 6048743, 118, 3305098, 356635, 4173351, 4062646, 
@@ -68,11 +95,5 @@ if __name__ == '__main__':
                 1329495, 814196, 991174, 852755, 8692386, 8285294, 3559004, 6478150, 1042514,
                 774591, 351211}
     
-    total_efforts = 0
-    t_init = time.time()
-    for i, segment in enumerate(segments, 1):
-        print '{}} Starting segment {}'.format(i, segment)
-        total_efforts += get_insert_segment_efforts(segment)
-    t_mins = (time.time() - t_init)/60
-    print 'Retrieved and inserted {} efforts in {:.2f} minutes'.format(total_efforts, t_mins)
-
+    segment_getter = StravaSegmentsGetter()
+    segment_getter.get_segments_efforts(list(segments))
