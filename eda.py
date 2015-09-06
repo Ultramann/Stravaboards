@@ -2,12 +2,7 @@ import time
 import seaborn
 import pandas as pd
 import matplotlib.pyplot as plt
-from strava_db import get_clean_df
-
-def make_csv(file_name, df=None):
-    if type(df) == None:
-        df = get_clean_df()
-    df.to_csv('data/{}.csv'.format(file_name))
+from strava_db import EffortDfGetter
 
 def print_num_atheletes_with_efforts_gt(df, nums):
     for num in nums:
@@ -36,7 +31,8 @@ def plot_num_athletes_by_effort_count_hist(df, bin_list=[1, 2, 3, 4, 11, 26, 51,
 
 if __name__ == '__main__':
     t = time.time()
-    df = get_clean_df(300000)
+    df_getter = EffortDfGetter(origin='mongo')
+    df = df_getter.get()
     print 'Retrieved dataframe with {} efforts in {:.2f} seconds'.format(df.shape[0], time.time()-t)
 
 

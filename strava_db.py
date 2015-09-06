@@ -5,47 +5,58 @@ import pandas as pd
 from sys import stdout
 from pymongo import MongoClient
 
-def get_big_df(size):
-    client = MongoClient()
-    db = client['Strava']
-    table = db['segment_efforts']
-    if size:
-        df = pd.DataFrame(list(table.find().limit(size)))
-    else:
-        df = pd.DataFrame(list(table.find()))
-    return df
+class EffortDfGetter(object):
+    def __init__(self, origin='json'):
+        self.origin = origin
 
-def make_id_cols(df):
-    columns = ['athlete', 'segment', 'activity']
-    for column in columns:
-        df['{}_id'.format(column)] = df[column].apply(lambda x: x['id'])
+    def get(self, size=False):
+        self.df = pd.read_json('Somthing from S3') if self.origin == 'json' \
+                                                   else self.get_big_df_from_mongo(size)
+        self.transform_df()
+        return self.df
 
-def get_segment_info(df):
-    categories = ['average_grade', 'distance', 'elevation_low', 'elevation_high', 'maximum_grade']
-    for category in categories:
-        df['seg_{}'.format(category)] = df.segment.apply(lambda x: x[category])
+    def transform_df(self):
+        self.make_id_cols()
+        self.get_segment_info()
+        self.make_date_col()
+        self.engineer_features()
+        self.remove_useless_columns()
 
-def make_date_col(df):
-    df['date'] = pd.to_datetime(df.start_date_local)
+    def get_big_df_from_mongo(self, size=False):
+        client = MongoClient()
+        db = client['Strava']
+        table = db['segment_efforts']
+        if size:
+            df = pd.DataFrame(list(table.find().limit(size)))
+        else:
+            df = pd.DataFrame(list(table.find()))
+        return df
 
-def engineer_features(df):
-    df['tracks_cadence'] = ~pd.isnull(df.average_cadence)
-    df['tracks_heartrate'] = ~pd.isnull(df.average_heartrate)
+    def make_id_cols(self):
+        columns = ['athlete', 'segment', 'activity']
+        for column in columns:
+            self.df['{}_id'.format(column)] = self.df[column].apply(lambda x: x['id'])
 
-def remove_useless_columns(df):
-    columns = ['max_heartrate', 'resource_state', 'name', 'kom_rank', 'start_index', 'pr_rank',
-               'id', '_id', 'achievements', 'end_index', 'segment', 'athlete', 'start_date', 
-               'start_date_local', 'average_cadence', 'average_heartrate', 'activity']
-    df.drop(columns, inplace=True, axis=1)
+    def get_segment_info(self):
+        categories = ['average_grade', 'distance', 'elevation_low', 
+                      'elevation_high', 'maximum_grade']
+        for category in categories:
+            self.df['seg_{}'.format(category)] = self.df.segment.apply(lambda x: x[category])
 
-def get_clean_df(size=None):
-    df = get_big_df(size)
-    make_id_cols(df)
-    get_segment_info(df)
-    make_date_col(df)
-    engineer_features(df)
-    remove_useless_columns(df)
-    return df
+    def make_date_col(self):
+        self.df['date'] = pd.to_datetime(self.df.start_date_local)
+
+    def engineer_features(self):
+        self.df['tracks_cadence'] = ~pd.isnull(self.df.average_cadence)
+        self.df['tracks_heartrate'] = ~pd.isnull(self.df.average_heartrate)
+
+    def remove_useless_columns(self):
+        columns = ['max_heartrate', 'resource_state', 'name', 'kom_rank', 'start_index', 'pr_rank',
+                   'id', '_id', 'achievements', 'end_index', 'segment', 'athlete', 'start_date', 
+                   'start_date_local', 'average_cadence', 'average_heartrate', 'activity']
+        self.df.drop(columns, inplace=True, axis=1)
+
+
 
 class StravaSegmentsGetter(object):
     def __init__(self):
@@ -82,7 +93,7 @@ class StravaSegmentsGetter(object):
 
     def get_insert_current_segment_efforts(self):
         self.get_time_current_segment_efforts()
-        self.insert_time_current_segment_efforts()
+        self.insert_current_segment_efforts()
 
     def get_time_current_segment_efforts(self):
         self.time = time.time()
@@ -117,8 +128,7 @@ class StravaSegmentsGetter(object):
         stdout.flush()
         stdout.write('   Retrieving {} efforts: {:.1f}% complete --- Estimated time remaining: {:.1f} seconds            \r'.format(self.current_segment_effort_count, percent_complete, eta))
 
-    def insert_time_current_segment_efforts(self):
-        t = time.time()
+    def insert_current_segment_efforts(self):
         self.table.insert_many(self.current_efforts)
         self.total_efforts += len(self.current_efforts)
 
