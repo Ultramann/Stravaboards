@@ -1,4 +1,5 @@
 import time
+import eda_fuctions
 from strava_db import EffortDfGetter
 
 if __name__ == '__main__':
