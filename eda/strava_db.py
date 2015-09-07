@@ -1,3 +1,4 @@
+import json
 import pandas as pd
 from pymongo import MongoClient
 
@@ -6,8 +7,7 @@ class EffortDfGetter(object):
         self.origin = origin
 
     def get(self, size=False):
-        self.df = pd.read_json('Somthing from S3') if self.origin == 'json' \
-                                                   else self.get_big_df_from_mongo(size)
+        self.df = self.get_df_from_json() if self.origin == 'json' else self.get_df_from_mongo(size)
         self.transform_df()
         return self.df
 
@@ -18,7 +18,11 @@ class EffortDfGetter(object):
         self.engineer_features()
         self.remove_useless_columns()
 
-    def get_big_df_from_mongo(self, size=False):
+    def get_df_from_json(self):
+        with open('../data/efforts.json') as f:
+            return pd.DataFrame(json.loads(line) for line in f)
+
+    def get_df_from_mongo(self, size=False):
         client = MongoClient()
         db = client['Strava']
         table = db['segment_efforts']
