@@ -32,7 +32,7 @@ def plot_num_athletes_by_effort_count_hist(df, bin_list=[1, 2, 3, 4, 11, 26, 51,
 if __name__ == '__main__':
     t = time.time()
     df_getter = EffortDfGetter(origin='mongo')
-    df = df_getter.get()
+    df = df_getter.get(300000)
     print 'Retrieved dataframe with {} efforts in {:.2f} seconds'.format(df.shape[0], time.time()-t)
 
 

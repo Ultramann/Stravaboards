@@ -1,62 +1,8 @@
 import time
 import json
 import requests
-import pandas as pd
 from sys import stdout
 from pymongo import MongoClient
-
-class EffortDfGetter(object):
-    def __init__(self, origin='json'):
-        self.origin = origin
-
-    def get(self, size=False):
-        self.df = pd.read_json('Somthing from S3') if self.origin == 'json' \
-                                                   else self.get_big_df_from_mongo(size)
-        self.transform_df()
-        return self.df
-
-    def transform_df(self):
-        self.make_id_cols()
-        self.get_segment_info()
-        self.make_date_col()
-        self.engineer_features()
-        self.remove_useless_columns()
-
-    def get_big_df_from_mongo(self, size=False):
-        client = MongoClient()
-        db = client['Strava']
-        table = db['segment_efforts']
-        if size:
-            df = pd.DataFrame(list(table.find().limit(size)))
-        else:
-            df = pd.DataFrame(list(table.find()))
-        return df
-
-    def make_id_cols(self):
-        columns = ['athlete', 'segment', 'activity']
-        for column in columns:
-            self.df['{}_id'.format(column)] = self.df[column].apply(lambda x: x['id'])
-
-    def get_segment_info(self):
-        categories = ['average_grade', 'distance', 'elevation_low', 
-                      'elevation_high', 'maximum_grade']
-        for category in categories:
-            self.df['seg_{}'.format(category)] = self.df.segment.apply(lambda x: x[category])
-
-    def make_date_col(self):
-        self.df['date'] = pd.to_datetime(self.df.start_date_local)
-
-    def engineer_features(self):
-        self.df['tracks_cadence'] = ~pd.isnull(self.df.average_cadence)
-        self.df['tracks_heartrate'] = ~pd.isnull(self.df.average_heartrate)
-
-    def remove_useless_columns(self):
-        columns = ['max_heartrate', 'resource_state', 'name', 'kom_rank', 'start_index', 'pr_rank',
-                   'id', '_id', 'achievements', 'end_index', 'segment', 'athlete', 'start_date', 
-                   'start_date_local', 'average_cadence', 'average_heartrate', 'activity']
-        self.df.drop(columns, inplace=True, axis=1)
-
-
 
 class StravaSegmentsGetter(object):
     def __init__(self):
@@ -136,4 +82,22 @@ class StravaSegmentsGetter(object):
         total_mins = (time.time() - self.time_init)/60
         print 'Retrieved and inserted {} efforts in {:.2f} minutes'.format(self.total_efforts, 
                                                                            total_mins)
+
+if __name__ == '__main__':
+    finished = {125, 5642079, 5857327, 4793848, 6048743, 118, 3305098, 356635, 4173351, 4062646, 
+                640981, 6135256, 1173191, 4783121, 1723, 6366843, 8429549, 7481858, 651728, 1521, 
+                4259807, 6875972, 5611730, 2707292, 7883627, 622149, 2451142, 5836703, 2858097,
+                634332, 1077, 8411114, 881888, 3545515, 5099924, 3066267, 3066267, 934409, 633435,
+                1003240, 866902, 835833, 8042617, 8727433, 4599878, 6325954, 1759580, 1105154, 
+                806005, 1451654, 7531032, 4779241, 2435434, 841251, 2958707, 9008146, 2188435, 
+                2627, 6838822, 5079282, 8594904, 7615757, 7615757, 2350753, 2687319, 2350791, 
+                2339624, 2687221, 8727940, 844654, 1213534, 5831003, 5134503, 8050750, 798887, 
+                7074191, 975395, 612159, 7969432, 1745022, 5292307, 180, 6768781, 5292307, 
+                4178476, 925819, 925819, 6173812, 6458467, 4367683, 821934, 866323, 8800675, 
+                666315, 2665113, 7186902, 6546684, 2234914, 747045, 8239228, 905184, 3200333, 
+                1329495, 814196, 991174, 852755, 8692386, 8285294, 3559004, 6478150, 1042514,
+                774591, 351211}
+    
+    segment_getter = StravaSegmentsGetter()
+    segment_getter.get_segments_efforts(finished)
 
