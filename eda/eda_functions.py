@@ -8,8 +8,10 @@ def print_num_atheletes_with_efforts_gt(df, nums):
         print 'Number of athletes with greater than {} efforts in the database: {}'.format(
                                                                                 num, num_aths)
 
-def plot_num_athletes_by_effort_count_hist(df, bin_list=[1, 2, 3, 4, 11, 26, 51, 101, 100000], 
-                       bin_labels=['1', '2', '3', '4-10', '11-25', '26-50', '51-100', '101+'],
+def plot_num_athletes_by_effort_count_hist(df, 
+                       bin_list=[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 26, 51, 101, 100000], 
+                       bin_labels=['1', '2', '3', '4', '5', '6', '7', '8', '9', 
+                                   '10', '11-25', '26-50', '51-100', '101+'],
                        show=True, save=False, file_name=None):
     counts_by_athlete = pd.Series(df.groupby('athlete_id').count().date, name='effort_count')
     count_series = counts_by_athlete.groupby(pd.cut(counts_by_athlete, bin_list, 
