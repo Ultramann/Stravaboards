@@ -50,9 +50,10 @@ class EffortDfGetter(object):
     def engineer_features(self):
         self.df['tracks_cadence'] = ~pd.isnull(self.df.average_cadence)
         self.df['tracks_heartrate'] = ~pd.isnull(self.df.average_heartrate)
+        self.df.eval('dist_diff = seg_distance - distance')
 
     def remove_useless_rows(self):
-        self.df = self.df.query('moving_time > 0)
+        self.df = self.df.query('moving_time > 0')
 
     def remove_useless_columns(self):
         columns = ['max_heartrate', 'resource_state', 'name', 'kom_rank', 'start_index', 'pr_rank',
