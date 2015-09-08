@@ -16,6 +16,7 @@ class EffortDfGetter(object):
         self.get_segment_info()
         self.make_date_col()
         self.engineer_features()
+        self.remove_useless_rows()
         self.remove_useless_columns()
 
     def get_df_from_json(self):
@@ -49,6 +50,9 @@ class EffortDfGetter(object):
     def engineer_features(self):
         self.df['tracks_cadence'] = ~pd.isnull(self.df.average_cadence)
         self.df['tracks_heartrate'] = ~pd.isnull(self.df.average_heartrate)
+
+    def remove_useless_rows(self):
+        self.df = self.df.query('moving_time > 0)
 
     def remove_useless_columns(self):
         columns = ['max_heartrate', 'resource_state', 'name', 'kom_rank', 'start_index', 'pr_rank',
