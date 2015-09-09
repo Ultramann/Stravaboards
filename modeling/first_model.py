@@ -16,7 +16,7 @@ def get_simple_df(df):
 
 def make_cleaner_dfs(dfs, num_features):
     return [pd.concat([df] + [pd.Series(df.factors.apply(lambda x: x[i]), 
-                              name='rating {}'.format(i+1)) for i in range(num_features)],
+                              name='rating_{}'.format(i+1)) for i in range(num_features)],
                       axis=1)  for df in dfs]
 
 def drop_useless_columns(dfs):
