@@ -15,23 +15,31 @@ def get_simple_df(df):
     return pivot_df.unstack().reset_index(name='average_speed')
 
 def make_cleaner_dfs(dfs):
-    return [pd.concat(df, pd.Series(df.factors.apply(lambda x: x[0]), name='rating')) for df in dfs]
+    return [pd.concat([df, pd.Series(df.factors.apply(lambda x: x[0]), name='rating')], axis=1)
+            for df in dfs]
+
+def drop_useless_columns(dfs):
+    for df in dfs:
+        df.drop(['linear_terms', 'factors'], axis=1, inplace=True)
 
 def get_clean_dfs_from_model(model):
     model_coefficients = model['coefficients']
-    athlete_df = model_coefficients['athlete_id'].to_dataframe().set_index('athlete_id', 
-                                                                            inplace=True)
-    segment_df = model_coefficients['segment_id'].to_dataframe().set_index('segment_id',
-                                                                            inplace=True)
-    cleaner_athlete_df, cleaner_segment_df = *make_cleaner_dfs([athlete_df, segment_df])
+    athlete_df = model_coefficients['athlete_id'].to_dataframe()
+    segment_df = model_coefficients['segment_id'].to_dataframe()
+    cleaner_athlete_df, cleaner_segment_df = make_cleaner_dfs([athlete_df, segment_df])
+    drop_useless_columns([cleaner_athlete_df, cleaner_segment_df])
+    cleaner_athlete_df.set_index(['athlete_id'], inplace=True)
+    cleaner_segment_df.set_index(['segment_id'], inplace=True)
+    return cleaner_athlete_df, cleaner_segment_df
 
 def get_latent_features(sf):
     model = gl.factorization_recommender.create(sf, user_id='athlete_id', item_id='segment_id', 
                                                 target='average_speed', num_factors=1)
-    
-
+    athlete_ratings, segment_ratings = get_clean_dfs_from_model(model)
+    return athlete_ratings, segment_ratings, model
 
 if __name__ == '__main__':
     df = get_df()
     simple_df = get_simple_df(df)
     sf = gl.SFrame(simple_df).dropna()
+    athlete_ratings, segment_ratings, model = get_latent_features(sf)
