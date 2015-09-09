@@ -19,4 +19,4 @@ if __name__ == '__main__':
     df = get_df()
     pivot_df = get_pivot_df(df)
     simple_df = get_simple_df(pivot_df)
-    sf = gl.SFrame(simple_df)
+    sf = gl.SFrame(simple_df).dropna()
