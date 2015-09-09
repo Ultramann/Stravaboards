@@ -51,6 +51,7 @@ class EffortDfGetter(object):
         self.df['tracks_cadence'] = ~pd.isnull(self.df.average_cadence)
         self.df['tracks_heartrate'] = ~pd.isnull(self.df.average_heartrate)
         self.df.eval('dist_diff = seg_distance - distance')
+        self.df.eval('average_speed = distance / elapsed_time')
 
     def remove_useless_rows(self):
         self.df = self.df.query('moving_time > 0')
