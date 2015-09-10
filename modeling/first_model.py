@@ -18,7 +18,12 @@ def get_agg_df(df):
     agg_df[columns_to_normalize] = (agg_df[columns_to_normalize] - 
                                     agg_df[columns_to_normalize].mean()) / \
                                     agg_df[columns_to_normalize].std()
-    return agg_df[columns_to_keep]
+    return gl.SFrame(agg_df[columns_to_keep])
+
+def get_seg_df(df):
+    segment_columns = ['segment_id', 'seg_average_grade', 'seg_distance', 'seg_elevation_low', 
+                       'seg_elevation_high', 'seg_maximum_grade']
+    return gl.SFrame(df[segment_columns].groupby('segment_id').first())
 
 def make_cleaner_dfs(dfs, num_features):
     return [pd.concat([df] + [pd.Series(df.factors.apply(lambda x: x[i]), 
@@ -39,19 +44,21 @@ def get_clean_dfs_from_model(model, num_features):
     cleaner_segment_df.set_index(['segment_id'], inplace=True)
     return cleaner_athlete_df, cleaner_segment_df
 
-def get_latent_features(sf):
+def get_latent_features(agg_sf, seg_sf):
     number_latent_features = 2
-    model = gl.factorization_recommender.create(sf, user_id='athlete_id', item_id='segment_id', 
-                                                target='average_speed', nmf=True,
-                                                regularization=0, linear_regularization=0,
+    model = gl.factorization_recommender.create(agg_sf, user_id='athlete_id', item_id='segment_id', 
+                                                target='average_speed', item_data=seg_sf,
+                                                nmf=True, solver='sgd',
+                                                regularization=0,
+                                                linear_regularization=0,
                                                 num_factors=number_latent_features)
     athlete_ratings, segment_ratings = get_clean_dfs_from_model(model, number_latent_features)
     return athlete_ratings, segment_ratings
 
 def df_to_latent_features(df):
-    agg_df = get_agg_df(df)
-    sf = gl.SFrame(agg_df).dropna()
-    return get_latent_features(sf)
+    agg_sf = get_agg_sf(df)
+    seg_sf = get_seg_sf(df)
+    return get_latent_features(agg_sf, seg_sf)
 
 if __name__ == '__main__':
     df = get_df()
