@@ -10,11 +10,15 @@ def get_df():
     return df_getter.get()
 
 def get_agg_df(df):
-    pivot_df = pd.pivot_table(df, values='average_speed', index='segment_id', 
-                          columns=['athlete_id'], aggfunc=np.mean)
-    avg_speed_df = pivot_df.unstack().reset_index(name='average_speed')
-    mean_df = df.groupby(['segment_id', 'athlete_id']).mean().reset_index()
-    return avg_speed_df.join(mean_df, on=['segment_id', 'athlete_id'])
+    bad_columns_to_keep = ['segment_id', 'athlete_id', 'average_watts', 'distance', 'elapsed_time', 
+                       'moving_time', 'tracks_cadence', 'tracks_heartrate', 'average_speed']
+    columns_to_keep = ['segment_id', 'athlete_id', 'average_speed']
+    columns_to_normalize = ['tracks_heartrate', 'tracks_cadence', 'moving_time']
+    agg_df = df.groupby(['segment_id', 'athlete_id']).mean().reset_index()
+    agg_df[columns_to_normalize] = (agg_df[columns_to_normalize] - 
+                                    agg_df[columns_to_normalize].mean()) / \
+                                    agg_df[columns_to_normalize].std()
+    return agg_df[columns_to_keep]
 
 def make_cleaner_dfs(dfs, num_features):
     return [pd.concat([df] + [pd.Series(df.factors.apply(lambda x: x[i]), 
@@ -44,8 +48,11 @@ def get_latent_features(sf):
     athlete_ratings, segment_ratings = get_clean_dfs_from_model(model, number_latent_features)
     return athlete_ratings, segment_ratings
 
+def df_to_latent_features(df):
+    agg_df = get_agg_df(df)
+    sf = gl.SFrame(agg_df).dropna()
+    return get_latent_features(sf)
+
 if __name__ == '__main__':
     df = get_df()
-    agg_df = get_agg_df(df)
-    sf = gl.SFrame(simple_df).dropna()
-    athlete_ratings, segment_ratings = get_latent_features(sf)
+    athlete_ratings, segment_ratings = df_to_latent_features(df)
