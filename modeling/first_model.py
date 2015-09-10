@@ -9,7 +9,7 @@ def get_df():
     df_getter = EffortDfGetter(origin='json')
     return df_getter.get()
 
-def get_agg_df(df):
+def get_agg_sf(df):
     bad_columns_to_keep = ['segment_id', 'athlete_id', 'average_watts', 'distance', 'elapsed_time', 
                        'moving_time', 'tracks_cadence', 'tracks_heartrate', 'average_speed']
     columns_to_keep = ['segment_id', 'athlete_id', 'average_speed']
@@ -20,10 +20,10 @@ def get_agg_df(df):
                                     agg_df[columns_to_normalize].std()
     return gl.SFrame(agg_df[columns_to_keep])
 
-def get_seg_df(df):
+def get_seg_sf(df):
     segment_columns = ['segment_id', 'seg_average_grade', 'seg_distance', 'seg_elevation_low', 
                        'seg_elevation_high', 'seg_maximum_grade']
-    return gl.SFrame(df[segment_columns].groupby('segment_id').first())
+    return gl.SFrame(df[segment_columns].groupby('segment_id').first().reset_index())
 
 def make_cleaner_dfs(dfs, num_features):
     return [pd.concat([df] + [pd.Series(df.factors.apply(lambda x: x[i]), 
@@ -48,9 +48,10 @@ def get_latent_features(agg_sf, seg_sf):
     number_latent_features = 2
     model = gl.factorization_recommender.create(agg_sf, user_id='athlete_id', item_id='segment_id', 
                                                 target='average_speed', item_data=seg_sf,
-                                                nmf=True, solver='sgd',
+                                                nmf=True, 
+                                                #solver='sgd',
                                                 regularization=0,
-                                                linear_regularization=0,
+                                                #linear_regularization=0,
                                                 num_factors=number_latent_features)
     athlete_ratings, segment_ratings = get_clean_dfs_from_model(model, number_latent_features)
     return athlete_ratings, segment_ratings
