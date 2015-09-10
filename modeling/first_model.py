@@ -10,20 +10,15 @@ def get_df():
     return df_getter.get()
 
 def get_agg_sf(df):
-    bad_columns_to_keep = ['segment_id', 'athlete_id', 'average_watts', 'distance', 'elapsed_time', 
-                       'moving_time', 'tracks_cadence', 'tracks_heartrate', 'average_speed']
-    columns_to_keep = ['segment_id', 'athlete_id', 'average_speed']
-    columns_to_normalize = ['tracks_heartrate', 'tracks_cadence', 'moving_time']
+    columns_to_keep = ['segment_id', 'athlete_id', 'average_speed']#, 'tracks_heartrate', 
+                       #'tracks_cadence', 'moving_time', 'elapsed_time', 'distance']
     agg_df = df.groupby(['segment_id', 'athlete_id']).mean().reset_index()
-    agg_df[columns_to_normalize] = (agg_df[columns_to_normalize] - 
-                                    agg_df[columns_to_normalize].mean()) / \
-                                    agg_df[columns_to_normalize].std()
     return gl.SFrame(agg_df[columns_to_keep])
 
 def get_seg_sf(df):
-    segment_columns = ['segment_id', 'seg_average_grade', 'seg_distance', 'seg_elevation_low', 
-                       'seg_elevation_high', 'seg_maximum_grade']
-    return gl.SFrame(df[segment_columns].groupby('segment_id').first().reset_index())
+    segment_columns = ['segment_id', 'seg_average_grade', 'seg_distance', 'seg_maximum_grade']
+    segment_df = df[segment_columns].groupby('segment_id').first()
+    return gl.SFrame(segment_df.reset_index())
 
 def make_cleaner_dfs(dfs, num_features):
     return [pd.concat([df] + [pd.Series(df.factors.apply(lambda x: x[i]), 
@@ -45,16 +40,19 @@ def get_clean_dfs_from_model(model, num_features):
     return cleaner_athlete_df, cleaner_segment_df
 
 def get_latent_features(agg_sf, seg_sf):
-    number_latent_features = 2
+    number_latent_features = 1
     model = gl.factorization_recommender.create(agg_sf, user_id='athlete_id', item_id='segment_id', 
-                                                target='average_speed', item_data=seg_sf,
-                                                nmf=True, 
-                                                #solver='sgd',
+                                                target='average_speed', 
+                                                #item_data=seg_sf,
+                                                side_data_factorization=False,
                                                 regularization=0,
-                                                #linear_regularization=0,
+                                                linear_regularization=0,
+                                                nmf=True, 
+                                                solver='adagrad',
+                                                max_iterations=500,
                                                 num_factors=number_latent_features)
     athlete_ratings, segment_ratings = get_clean_dfs_from_model(model, number_latent_features)
-    return athlete_ratings, segment_ratings
+    return athlete_ratings, segment_ratings, model
 
 def df_to_latent_features(df):
     agg_sf = get_agg_sf(df)
@@ -63,4 +61,4 @@ def df_to_latent_features(df):
 
 if __name__ == '__main__':
     df = get_df()
-    athlete_ratings, segment_ratings = df_to_latent_features(df)
+    athlete_ratings, segment_ratings, model = df_to_latent_features(df)
