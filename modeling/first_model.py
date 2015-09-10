@@ -9,10 +9,12 @@ def get_df():
     df_getter = EffortDfGetter(origin='json')
     return df_getter.get()
 
-def get_simple_df(df):
+def get_agg_df(df):
     pivot_df = pd.pivot_table(df, values='average_speed', index='segment_id', 
                           columns=['athlete_id'], aggfunc=np.mean)
-    return pivot_df.unstack().reset_index(name='average_speed')
+    avg_speed_df = pivot_df.unstack().reset_index(name='average_speed')
+    mean_df = df.groupby(['segment_id', 'athlete_id']).mean().reset_index()
+    return avg_speed_df.join(mean_df, on=['segment_id', 'athlete_id'])
 
 def make_cleaner_dfs(dfs, num_features):
     return [pd.concat([df] + [pd.Series(df.factors.apply(lambda x: x[i]), 
@@ -37,12 +39,13 @@ def get_latent_features(sf):
     number_latent_features = 2
     model = gl.factorization_recommender.create(sf, user_id='athlete_id', item_id='segment_id', 
                                                 target='average_speed', nmf=True,
+                                                regularization=0, linear_regularization=0,
                                                 num_factors=number_latent_features)
     athlete_ratings, segment_ratings = get_clean_dfs_from_model(model, number_latent_features)
-    return athlete_ratings, segment_ratings, model
+    return athlete_ratings, segment_ratings
 
 if __name__ == '__main__':
     df = get_df()
-    simple_df = get_simple_df(df)
+    agg_df = get_agg_df(df)
     sf = gl.SFrame(simple_df).dropna()
-    athlete_ratings, segment_ratings, model = get_latent_features(sf)
+    athlete_ratings, segment_ratings = get_latent_features(sf)
