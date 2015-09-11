@@ -1,6 +1,7 @@
 import sys
 sys.path.append('../eda')
 from strava_db import EffortDfGetter
+import model_validation as mv
 import graphlab as gl
 import pandas as pd
 import numpy as np
@@ -77,4 +78,5 @@ def evaluate_latent_feature_correlations(df, segment_ratings):
 
 if __name__ == '__main__':
     df = get_df()
-    athlete_ratings, segment_ratings, model = df_to_latent_features(df, 2)
+    training_df, testing_df = mv.split_efforts(df)
+    athlete_ratings, segment_ratings, model = df_to_latent_features(training_df, 2)
