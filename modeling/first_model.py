@@ -68,6 +68,13 @@ def plot_ratings(ratings_df):
     sample_ratings = ratings_df.ix[random.sample(ratings_df.index, 50)]
     sample_ratings.plot(kind='bar', stacked='True', figsize=(20, 10))
 
+def evaluate_latent_feature_correlations(df, segment_ratings):
+    rating_columns = list(segment_ratings.columns.values) 
+    segment_columns = ['seg_average_grade', 'seg_distance', 'seg_maximum_grade'] + rating_columns
+                       
+    print df.groupby('segment_id').first().merge(segment_ratings, right_index=True, 
+                                   left_index=True)[segment_columns].corr()[rating_columns]
+
 if __name__ == '__main__':
     df = get_df()
     athlete_ratings, segment_ratings, model = df_to_latent_features(df, 2)
