@@ -4,6 +4,7 @@ from strava_db import EffortDfGetter
 import graphlab as gl
 import pandas as pd
 import numpy as np
+import random
 
 def get_df():
     df_getter = EffortDfGetter(origin='json')
@@ -27,7 +28,7 @@ def make_cleaner_dfs(dfs, num_features):
 
 def drop_useless_columns(dfs):
     for df in dfs:
-        df.drop(['factors'], axis=1, inplace=True)
+        df.drop(['factors', 'linear_terms'], axis=1, inplace=True)
 
 def get_clean_dfs_from_model(model, num_features):
     model_coefficients = model['coefficients']
@@ -39,25 +40,33 @@ def get_clean_dfs_from_model(model, num_features):
     cleaner_segment_df.set_index(['segment_id'], inplace=True)
     return cleaner_athlete_df, cleaner_segment_df
 
-def get_latent_features(agg_sf, seg_sf):
-    number_latent_features = 1
+def get_latent_features(agg_sf, number_latent_features):
     model = gl.factorization_recommender.create(agg_sf, user_id='athlete_id', item_id='segment_id', 
                                                 target='average_speed', 
                                                 #item_data=seg_sf,
-                                                side_data_factorization=False,
+                                                #side_data_factorization=False,
                                                 regularization=0,
                                                 linear_regularization=0,
-                                                nmf=True, 
-                                                solver='adagrad',
-                                                max_iterations=500,
+                                                #nmf=True, 
+                                                solver='sgd',
+                                                max_iterations=100,
                                                 num_factors=number_latent_features)
     athlete_ratings, segment_ratings = get_clean_dfs_from_model(model, number_latent_features)
     return athlete_ratings, segment_ratings, model
 
-def df_to_latent_features(df):
+def df_to_latent_features(df, number_latent_features):
     agg_sf = get_agg_sf(df)
-    seg_sf = get_seg_sf(df)
-    return get_latent_features(agg_sf, seg_sf)
+    #seg_sf = get_seg_sf(df)
+    return get_latent_features(agg_sf, number_latent_features)
+
+def plot_ratings(ratings_df):
+    # Get scale for binning in hist depending on what df we're plotting for
+    bins_scale = 5 if ratings_df.index.name == 'segment_id' else 300
+    # Plot hist with scaled number of bins
+    ratings_df.hist(bins=ratings_df.shape[0]/bins_scale, figsize=(10, 5))
+    # Plot random sample of ratings
+    sample_ratings = ratings_df.ix[random.sample(ratings_df.index, 50)]
+    sample_ratings.plot(kind='bar', stacked='True', figsize=(20, 10))
 
 if __name__ == '__main__':
     df = get_df()
