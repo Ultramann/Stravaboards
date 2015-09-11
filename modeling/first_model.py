@@ -70,4 +70,4 @@ def plot_ratings(ratings_df):
 
 if __name__ == '__main__':
     df = get_df()
-    athlete_ratings, segment_ratings, model = df_to_latent_features(df)
+    athlete_ratings, segment_ratings, model = df_to_latent_features(df, 2)
