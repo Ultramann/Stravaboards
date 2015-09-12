@@ -1,3 +1,4 @@
+import pickle
 import numpy as np
 import pandas as pd
 
@@ -45,9 +46,17 @@ def get_n_leaders(ratings_df, rating_column, n=20):
 
     return n_leaders_df
 
-def get_all_leaderboards(ratings_df, n_leaders=20):
+def get_all_leaderboards(ratings_df, n_leaders=20, file_path=None):
     '''
     Input: DataFrame of latent features
     Output: List of DataFrames with the top n_leaders ratings and their rank for each latent feature
     '''
-    return [get_n_leaders(ratings_df, column, n_leaders) for column in ratings_df.columns]
+    # Make leaderboard list
+    leaderboards = [get_n_leaders(ratings_df, column, n_leaders) for column in ratings_df.columns]
+
+    # Pickle leaderboard list to file path if provided
+    if file_path:
+        with open(file_path, 'wb') as f:
+            pickle.dump(leaderboards, f)
+
+    return leaderboards
