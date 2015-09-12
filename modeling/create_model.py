@@ -16,6 +16,11 @@ def get_agg_sf(df):
     return gl.SFrame(agg_df[columns_to_keep])
 
 def make_cleaner_dfs(dfs, num_features):
+    '''
+    Input: List of DataFrames with latent features in single list, how many latent features in list
+    Output: List of DataFrames with the latent features in seperate columns 
+    '''
+    # For each dataframe make a new column, with rating_* as name, for each latent feature
     return [pd.concat([df] + [pd.Series(df.factors.apply(lambda x: x[i]), 
                               name='rating_{}'.format(i+1)) for i in range(num_features)],
                       axis=1)  for df in dfs]
