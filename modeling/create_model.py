@@ -36,6 +36,10 @@ def drop_useless_columns(dfs):
         df.drop(['factors', 'linear_terms'], axis=1, inplace=True)
 
 def get_clean_dfs_from_model(model, num_features):
+    '''
+    Input: Fitted GraphLab recommender model, number of features the model decomposed date into
+    Output: DataFrame of athlete ratings from model, DataFrame of segment ratings from model
+    '''
     model_coefficients = model['coefficients']
     athlete_df = model_coefficients['athlete_id'].to_dataframe()
     segment_df = model_coefficients['segment_id'].to_dataframe()
