@@ -40,13 +40,23 @@ def get_clean_dfs_from_model(model, num_features):
     Input: Fitted GraphLab recommender model, number of features the model decomposed date into
     Output: DataFrame of athlete ratings from model, DataFrame of segment ratings from model
     '''
+    # Get dictionary of model coefficients
     model_coefficients = model['coefficients']
+
+    # Turn the athlete and segment coefficients into dataframes
     athlete_df = model_coefficients['athlete_id'].to_dataframe()
     segment_df = model_coefficients['segment_id'].to_dataframe()
+
+    # Clean up dataframes by moving latent features from list into separate columns
     cleaner_athlete_df, cleaner_segment_df = make_cleaner_dfs([athlete_df, segment_df], num_features)
+
+    # Get rid of columns that wont be of use
     drop_useless_columns([cleaner_athlete_df, cleaner_segment_df])
+
+    # Reset indices
     cleaner_athlete_df.set_index(['athlete_id'], inplace=True)
     cleaner_segment_df.set_index(['segment_id'], inplace=True)
+
     return cleaner_athlete_df, cleaner_segment_df
 
 def get_latent_features(agg_sf, number_latent_features):
