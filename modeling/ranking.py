@@ -3,11 +3,20 @@ import numpy as np
 def scale_ratings(ratings_df):
     '''
     Input: DataFrame of latent features (ratings)
-    Output: Positively ratings on scale from 0 - 100 
+    Output: None
+
+    Scales ratings from current to 0 - 100, by column
     '''
-    ratings_df += abs(ratings_df.min())
-    ratings_df *= 100. / ratings_df.max() 
-    return ratings_df
+    # Make cope of ratings df to scale
+    scaled_ratings_df = ratings_df.copy(deep=True)
+
+    # Add the magnitude of the minimum rating to all, columnwise
+    scaled_ratings_df += abs(ratings_df.min())
+
+    # Multiply by the ratio of 100:(new max rating), columnwise
+    scaled_ratings_df *= 100. / ratings_df.max() 
+
+    return scaled_ratings_df
     
 def get_n_leaders(ratings_df, rating_column, n=20):
     '''
