@@ -26,6 +26,12 @@ def make_cleaner_dfs(dfs, num_features):
                       axis=1)  for df in dfs]
 
 def drop_useless_columns(dfs):
+    '''
+    Input: List of DataFrames
+    Output: None
+
+    Get rid of the columns that were turned into individual columns or were never useful
+    '''
     for df in dfs:
         df.drop(['factors', 'linear_terms'], axis=1, inplace=True)
 
