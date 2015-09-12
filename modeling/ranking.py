@@ -14,7 +14,7 @@ def get_scaled_ratings(ratings_df):
     scaled_ratings_df += abs(ratings_df.min())
 
     # Multiply by the ratio of 100:(new max rating), columnwise
-    scaled_ratings_df *= 100. / ratings_df.max() 
+    scaled_ratings_df *= 100. / scaled_ratings_df.max() 
 
     return scaled_ratings_df
     
@@ -27,13 +27,13 @@ def get_n_leaders(ratings_df, rating_column, n=20):
     scaled_ratings_df = get_scaled_ratings(ratings_df)
 
     # Get the indecies of the sorted scaled ratings
-    sorted_scaled_ratings_indexes = np.argsort(scaled_ratings_df[rating_column].values)
+    sorted_scaled_ratings_indices = np.argsort(scaled_ratings_df[rating_column].values)
 
     # We only want the top n athletes for the leaderboard
-    top_n_indexes = sorted_scaled_ratings_indexes[-1:-n-1:-1]
-
+    top_n_indices = sorted_scaled_ratings_indices[-1:-n-1:-1]
+    
     # Grab the top n athletes and there rating_column stats
-    n_leaders_df = scaled_ratings_df.loc[top_n_indexes][rating_column]
+    n_leaders_df = scaled_ratings_df.iloc[top_n_indices][rating_column]
 
     # Make new column, rank, ranging from 1 - n
     n_leaders_df['rank'] = range(1, n+1)
