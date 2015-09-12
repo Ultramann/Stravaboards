@@ -39,6 +39,8 @@ def get_n_leaders(ratings_df, rating_column, n=20):
 
     # Make new column, rank, ranging from 1 - n
     n_leaders_df['rank'] = range(1, n+1)
+
+    # Set it to be the index
     n_leaders_df.set_index('rank', inplace=True)
 
     return n_leaders_df
