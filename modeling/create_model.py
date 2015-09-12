@@ -60,6 +60,12 @@ def get_clean_dfs_from_model(model, num_features):
     return cleaner_athlete_df, cleaner_segment_df
 
 def get_latent_features(agg_sf, number_latent_features):
+    '''
+    Input: SFrame of data aggregated over athlete-segment pairs to be modeled,
+           Number of latent features in unitary matricies
+    Output: DataFrame of athlete_ratings, DataFrame of segment_ratings, Fitted GraphLab model
+    '''
+    # Make and fit GraphLab model to agg_sf data
     model = gl.factorization_recommender.create(agg_sf, user_id='athlete_id', item_id='segment_id', 
                                                 target='average_speed', 
                                                 regularization=0,
@@ -67,7 +73,9 @@ def get_latent_features(agg_sf, number_latent_features):
                                                 solver='sgd',
                                                 max_iterations=100,
                                                 num_factors=number_latent_features)
+    # Turn fitted model into athlete_ratings df and segment_ratings df
     athlete_ratings, segment_ratings = get_clean_dfs_from_model(model, number_latent_features)
+
     return athlete_ratings, segment_ratings, model
 
 def df_to_latent_features(df, number_latent_features):
