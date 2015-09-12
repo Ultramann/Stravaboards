@@ -1,5 +1,8 @@
 import random
+import numpy as np
 import pandas as pd
+import graphlab as gl
+import create_model as cm
 
 def plot_ratings(ratings_df):
     '''
@@ -51,4 +54,13 @@ def split_efforts(df, date='2015-08-01'):
 
     return training_df, testing_df
 
-    
+def testing_rmse(model, testing_df):
+    '''
+    Input: Trained GraphLab recommender model, Test observation DataFrame
+    Output: RMSE for testing_df
+    '''
+    test_sf = gl.SFrame(testing_df[['athlete_id', 'segment_id', 'average_speed']])
+    predictions = np.array(model.predict(test_sf))
+    rmse = (((testing_df.average_speed.values - predictions) ** 2) ** 0.5).sum() / \
+                                                                    predictions.shape[0]
+    return rmse
