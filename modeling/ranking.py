@@ -1,6 +1,6 @@
 import numpy as np
 
-def scale_ratings(ratings_df):
+def get_scaled_ratings(ratings_df):
     '''
     Input: DataFrame of latent features (ratings)
     Output: None
@@ -23,10 +23,21 @@ def get_n_leaders(ratings_df, rating_column, n=20):
     Input: DataFrame of latent features, Column from user latent feature (rating) matrix
     Output: DataFrame of top n leaders and their ratings
     '''
-    sorted_ratings_indexes = np.argsort(ratings_df[rating_column].values)
-    top_n_indexes = sorted_ratings_indexes[-1:-n-1:-1]
-    n_leaders_df = ratings_df.loc[top_n_indexes][rating_column]
+    # Get the scaled ratings df
+    scaled_ratings_df = get_scaled_ratings(ratings_df)
+
+    # Get the indecies of the sorted scaled ratings
+    sorted_scaled_ratings_indexes = np.argsort(scaled_ratings_df[rating_column].values)
+
+    # We only want the top n athletes for the leaderboard
+    top_n_indexes = sorted_scaled_ratings_indexes[-1:-n-1:-1]
+
+    # Grab the top n athletes and there rating_column stats
+    n_leaders_df = scaled_ratings_df.loc[top_n_indexes][rating_column]
+
+    # Make new column, rank, ranging from 1 - n
     n_leaders_df['rank'] = range(1, n+1)
+
     return n_leaders_df
 
 def get_all_leader_boards(ratings_df, n_leaders=20):
