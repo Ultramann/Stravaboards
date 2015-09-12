@@ -1,11 +1,18 @@
 import graphlab as gl
 import pandas as pd
-import numpy as np
-import random
 
 def get_agg_sf(df):
+    '''
+    Input: DataFrame with data to create model from
+    Output: SFrame of target data aggregated over athlete-segment pairs
+    '''
+    # Columns that are going to be used to make model
     columns_to_keep = ['segment_id', 'athlete_id', 'average_speed']
-    agg_df = df.groupby(['segment_id', 'athlete_id']).mean().reset_index()
+
+    # Take mean over aggregated athlete-segment pairs, move those columns out of index
+    agg_df = df.groupby(['athlete_id', 'segment_id']).mean().reset_index()
+
+    # Return an SFrame of those aggregated target column, average_speed
     return gl.SFrame(agg_df[columns_to_keep])
 
 def make_cleaner_dfs(dfs, num_features):
