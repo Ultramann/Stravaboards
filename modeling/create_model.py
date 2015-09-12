@@ -79,6 +79,11 @@ def get_latent_features(agg_sf, number_latent_features):
     return athlete_ratings, segment_ratings, model
 
 def df_to_latent_features(df, number_latent_features):
+    '''
+    Input: DataFrame with obervations for model to be trained on, 
+           Number of latent features for model to decompose data into
+    Output: DataFrame of athlete_ratings, DataFrame of segment_ratings, Fitted GraphLab model
+    '''
     agg_sf = get_agg_sf(df)
     return get_latent_features(agg_sf, number_latent_features)
 
