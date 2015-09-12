@@ -45,7 +45,7 @@ def get_n_leaders(ratings_df, rating_column, n=20):
 
     return n_leaders_df
 
-def get_all_leader_boards(ratings_df, n_leaders=20):
+def get_all_leaderboards(ratings_df, n_leaders=20):
     '''
     Input: DataFrame of latent features
     Output: List of DataFrames with the top n_leaders ratings and their rank for each latent feature
