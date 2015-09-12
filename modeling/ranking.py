@@ -34,10 +34,12 @@ def get_n_leaders(ratings_df, rating_column, n=20):
     top_n_indices = sorted_scaled_ratings_indices[-1:-n-1:-1]
     
     # Grab the top n athletes and there rating_column stats
-    n_leaders_df = pd.DataFrame(scaled_ratings_df.iloc[top_n_indices][rating_column])
+    n_leaders = scaled_ratings_df.iloc[top_n_indices][rating_column]
+    n_leaders_df = n_leaders.reset_index()
 
     # Make new column, rank, ranging from 1 - n
     n_leaders_df['rank'] = range(1, n+1)
+    n_leaders_df.set_index('rank', inplace=True)
 
     return n_leaders_df
 
