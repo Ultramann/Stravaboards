@@ -41,7 +41,7 @@ def evaluate_latent_feature_correlations(df, segment_ratings):
     # Return just the rating columns from the correlation df
     return segment_correlation[rating_columns]
 
-def split_efforts(df, date='2015-08-01'):
+def old_split_efforts(df, date='2015-08-01'):
     '''
     Input:  Full effort DataFrame
     Output: Training effort DF, Testing effort DF
@@ -68,15 +68,26 @@ def split_efforts(df, date='2015-08-01'):
 
     return training_df, testing_df
 
-def second_split_efforts(df, date='2015-08-01'):
+def split_efforts(df, date='2015-08-01'):
+    '''
+    Input:  Full effort DataFrame
+    Output: Training effort DF, Testing effort DF
+
+    Subsets full effort df into training df, consistant of efforts before "date" and testing df of
+    efforts after date for athletes with efforts before date.
+    '''
+    # Split into training and testing sets on "date"
     train_df = df.query('date <= @date')
     test_df = df.query('date > @date')
 
+    # Get list of unique athletes in both subsets
     athletes_in_train = train_df.athlete_id.unique()
     athletes_in_test = test_df.athlete_id.unique()
 
-    athletes_to_use = set(athletes_in_train).intersect(set(athletes_in_test))
+    # Only use athletes who have efforts both before and after date
+    athletes_to_use = set(athletes_in_train).intersection(set(athletes_in_test))
 
+    # Modify test df to reflect that subset of athletes
     test_df = test_df.query('athlete_id in @athletes_to_use')
 
     return train_df, test_df
