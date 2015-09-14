@@ -78,12 +78,39 @@ def get_latent_features(agg_sf, number_latent_features):
 
     return athlete_ratings, segment_ratings, model
 
-def df_to_latent_features(df, number_latent_features):
+def df_to_latent_features(df, number_latent_features=1):
     '''
-    Input: DataFrame with obervations for model to be trained on, 
+    Input: DataFrame with observations for model to be trained on, 
            Number of latent features for model to decompose data into
     Output: DataFrame of athlete_ratings, DataFrame of segment_ratings, Fitted GraphLab model
     '''
-    agg_sf = get_agg_sf(df)
-    return get_latent_features(agg_sf, number_latent_features)
+    # Types of segments to classify
+    segment_types = ['total', 'uphill', 'downhill']
 
+    # Subset total df into up/downhill based on segment grade
+    uphill_df = df.query('seg_average_grade > 0')
+    downhill_df = df.query('seg_average_grade < 0')
+
+    # Make SFrames out of all dfs
+    tot_agg_sf = get_agg_sf(df)
+    uh_agg_sf = get_agg_sf(uphill_df)
+    dh_agg_sf = get_agg_sf(downhill_df)
+
+    # Get all ratings dfs and models in a dictionary
+    rankings_dict = {name: get_latent_features(sf, number_latent_features) for name, sf in
+                            zip(segment_types, [tot_agg_sf, uh_agg_sf, dh_agg_sf])}
+    
+    # Make aggregate rankings dfs by concatenating rankings from all models together
+    athlete_ratings = pd.concat([pd.Series(rankings_dict[name][0].rating_1, 
+                                           name='{}_rating'.format(name))
+                                 for name in segment_types], 
+                                axis=1)
+    segment_ratings = pd.concat([pd.Series(rankings_dict[name][1].rating_1, 
+                                           name='{}_rating'.format(name))
+                                 for name in segment_types], 
+                                axis=1)
+
+    # Make dictionary of models for each segment type
+    models = {name: rankings_dict[name][2] for name in segment_types}
+
+    return athlete_ratings, segment_ratings, models

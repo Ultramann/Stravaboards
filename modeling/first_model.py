@@ -11,4 +11,4 @@ def get_df():
 if __name__ == '__main__':
     df = get_df()
     training_df, testing_df = vm.split_efforts(df)
-    athlete_ratings, segment_ratings, model = cm.df_to_latent_features(training_df, 2)
+    athlete_ratings, segment_ratings, models = cm.df_to_latent_features(training_df)
