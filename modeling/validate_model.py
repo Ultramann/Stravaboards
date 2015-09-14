@@ -52,21 +52,34 @@ def split_efforts(df, date='2015-08-01'):
     # Get dataframe of all efforts that occurred after "date"
     recent_efforts_df = df.query('date > "{}"'.format(date))
 
-    # Get the segment counts for each athlete after date and in full data set
+    # Get the effort counts for each athlete after date and in full data set
     recent_seg_count = pd.Series(recent_efforts_df.groupby('athlete_id').count().segment_id)
     tot_seg_count = pd.Series(df.groupby('athlete_id').count().segment_id.ix[recent_seg_count.index])
 
-    # Grab only athletes who ridden on other segments before "date"
+    # Grab only athletes who have also ridden before "date"
     eligible_athletes = recent_seg_count[~(recent_seg_count == tot_seg_count)].index
     test_mask = [index for athlete in eligible_athletes
                        for index in recent_efforts_df.query('athlete_id == {}'.format(athlete)
                                                                              ).index.values]
 
     # Make training and testing subset dfs of the full df from eligble athlete mask
-    testing_df = df.ix[test_mask]
     training_df = df.drop(test_mask)
+    testing_df = df.ix[test_mask]
 
     return training_df, testing_df
+
+def second_split_efforts(df, date='2015-08-01'):
+    train_df = df.query('date <= @date')
+    test_df = df.query('date > @date')
+
+    athletes_in_train = train_df.athlete_id.unique()
+    athletes_in_test = test_df.athlete_id.unique()
+
+    athletes_to_use = set(athletes_in_train).intersect(set(athletes_in_test))
+
+    test_df = test_df.query('athlete_id in @athletes_to_use')
+
+    return train_df, test_df
 
 def testing_rmse(model, testing_df):
     '''
