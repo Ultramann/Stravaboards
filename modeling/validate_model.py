@@ -69,12 +69,14 @@ def split_efforts(df, date='2015-08-01'):
 
 def testing_rmse(models, testing_df):
     '''
-    Input: Trained GraphLab recommender models, Test observation DataFrame
-    Output: RMSE for testing_df and subsets
+    Input: Dictionary of trained GraphLab recommender models, Test observation DataFrame
+    Output: Dictionary of RMSEs for testing_df and subsets
 
     Get the root mean squared error for the test data's predicted values from the models for the
     total testing df and the respective subsets.
     '''
+    segment_types = ['total', 'uphill', 'downhill']
+
     # Subset testing df into up/downhill based on segment grade
     uphill_test_df = testing_df.query('seg_average_grade > 0')
     downhill_test_df = testing_df.query('seg_average_grade < 0')
@@ -85,14 +87,14 @@ def testing_rmse(models, testing_df):
     dh_test_agg_sf = cm.get_agg_sf(downhill_test_df)
 
     # Predict on testing data SFrame with model
-    predictions = [np.array(model.predict(sf)) for model, sf in 
-                        zip(models, [tot_test_agg_sf, uh_test_agg_sf, dh_test_agg_sf])]
+    predictions = {name: np.array(models[name].predict(sf)) for name, sf in 
+                        zip(segment_types, [tot_test_agg_sf, uh_test_agg_sf, dh_test_agg_sf])}
 
     # Calculate root mean squared error between actual test data and predicted values from model
     def rmse(df, prediction):
-        return (((df.groupby(['athlete_id', 'segment_id']).mean().average_speed.values 
-                                                            - prediction) ** 2) ** 0.5).mean()
+        agg_df = df.groupby(['athlete_id', 'segment_id']).mean().average_speed
+        return (((agg_df.values - prediction) ** 2) ** 0.5).mean()
 
-    rmses = [rmse(df, prediction) for df, prediction in 
-                        zip([testing_df, uphill_test_df, downhill_test_df], predictions)]
+    rmses = {name: rmse(df, predictions[name]) for name, df in 
+                zip(segment_types, [testing_df, uphill_test_df, downhill_test_df])}
     return rmses
