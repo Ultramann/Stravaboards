@@ -1,4 +1,3 @@
-import pickle
 import numpy as np
 import pandas as pd
 
@@ -35,7 +34,7 @@ class Leaderboards(object):
         for column in self.ratings.columns:
             self.scale_column_ratings(column)
 
-        # Make leaderboard list
+        # Make leaderboard dict
         leaderboards = {column: self.get_n_leaders(column) for column in self.ratings.columns}
 
         return leaderboards
