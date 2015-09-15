@@ -68,10 +68,11 @@ def split_efforts(df, date='2015-08-01'):
 
 def testing_rmse(models, testing_df):
     '''
-    Input: Trained GraphLab recommender model, Test observation DataFrame
-    Output: RMSE for testing_df
+    Input: Trained GraphLab recommender models, Test observation DataFrame
+    Output: RMSE for testing_df and subsets
 
-    Get the root mean squared error for the test data's predicted values from the model
+    Get the root mean squared error for the test data's predicted values from the models for the
+    total testing df and the respective subsets.
     '''
     # Subset testing df into up/downhill based on segment grade
     uphill_test_df = testing_df.query('seg_average_grade > 0')
