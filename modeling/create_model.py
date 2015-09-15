@@ -111,6 +111,6 @@ def df_to_latent_features(df, number_latent_features=1):
                                 axis=1)
 
     # Make dictionary of models for each segment type
-    models = {name: rankings_dict[name][2] for name in segment_types}
+    models = [rankings_dict[name][2] for name in segment_types]
 
     return athlete_ratings, segment_ratings, models

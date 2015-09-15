@@ -2,6 +2,7 @@ import random
 import numpy as np
 import pandas as pd
 import graphlab as gl
+import create_model as cm
 
 def plot_ratings(ratings_df):
     '''
@@ -41,33 +42,6 @@ def evaluate_latent_feature_correlations(df, segment_ratings):
     # Return just the rating columns from the correlation df
     return segment_correlation[rating_columns]
 
-def old_split_efforts(df, date='2015-08-01'):
-    '''
-    Input:  Full effort DataFrame
-    Output: Training effort DF, Testing effort DF
-
-    Chooses subset of efforts filtered by date, so long as the filtered efforts for a single user 
-    do not represent all of that users segments or all of a segments efforts.
-    '''
-    # Get dataframe of all efforts that occurred after "date"
-    recent_efforts_df = df.query('date > "{}"'.format(date))
-
-    # Get the effort counts for each athlete after date and in full data set
-    recent_seg_count = pd.Series(recent_efforts_df.groupby('athlete_id').count().segment_id)
-    tot_seg_count = pd.Series(df.groupby('athlete_id').count().segment_id.ix[recent_seg_count.index])
-
-    # Grab only athletes who have also ridden before "date"
-    eligible_athletes = recent_seg_count[~(recent_seg_count == tot_seg_count)].index
-    test_mask = [index for athlete in eligible_athletes
-                       for index in recent_efforts_df.query('athlete_id == {}'.format(athlete)
-                                                                             ).index.values]
-
-    # Make training and testing subset dfs of the full df from eligble athlete mask
-    training_df = df.drop(test_mask)
-    testing_df = df.ix[test_mask]
-
-    return training_df, testing_df
-
 def split_efforts(df, date='2015-08-01'):
     '''
     Input:  Full effort DataFrame
@@ -77,35 +51,46 @@ def split_efforts(df, date='2015-08-01'):
     efforts after date for athletes with efforts before date.
     '''
     # Split into training and testing sets on "date"
-    train_df = df.query('date <= @date')
-    test_df = df.query('date > @date')
+    training_df = df.query('date <= @date')
+    testing_df = df.query('date > @date')
 
     # Get list of unique athletes in both subsets
-    athletes_in_train = train_df.athlete_id.unique()
-    athletes_in_test = test_df.athlete_id.unique()
+    athletes_in_train = training_df.athlete_id.unique()
+    athletes_in_test = testing_df.athlete_id.unique()
 
     # Only use athletes who have efforts both before and after date
     athletes_to_use = set(athletes_in_train).intersection(set(athletes_in_test))
 
     # Modify test df to reflect that subset of athletes
-    test_df = test_df.query('athlete_id in @athletes_to_use')
+    testing_df = testing_df.query('athlete_id in @athletes_to_use')
 
-    return train_df, test_df
+    return training_df, testing_df
 
-def testing_rmse(model, testing_df):
+def testing_rmse(models, testing_df):
     '''
     Input: Trained GraphLab recommender model, Test observation DataFrame
     Output: RMSE for testing_df
 
     Get the root mean squared error for the test data's predicted values from the model
     '''
-    # Make appropriate SFrame out of testing data for prediction
-    test_sf = gl.SFrame(testing_df[['athlete_id', 'segment_id', 'average_speed']])
+    # Subset testing df into up/downhill based on segment grade
+    uphill_test_df = testing_df.query('seg_average_grade > 0')
+    downhill_test_df = testing_df.query('seg_average_grade < 0')
+
+    # Make SFrames out of all dfs
+    tot_test_agg_sf = cm.get_agg_sf(testing_df)
+    uh_test_agg_sf = cm.get_agg_sf(uphill_test_df)
+    dh_test_agg_sf = cm.get_agg_sf(downhill_test_df)
 
     # Predict on testing data SFrame with model
-    predictions = np.array(model.predict(test_sf))
+    predictions = [np.array(model.predict(sf)) for model, sf in 
+                        zip(models, [tot_test_agg_sf, uh_test_agg_sf, dh_test_agg_sf])]
 
     # Calculate root mean squared error between actual test data and predicted values from model
-    rmse = (((testing_df.average_speed.values - predictions) ** 2) ** 0.5).sum() / \
-                                                                    predictions.shape[0]
-    return rmse
+    def rmse(df, prediction):
+        return (((df.groupby(['athlete_id', 'segment_id']).mean().average_speed.values 
+                                                            - prediction) ** 2) ** 0.5).mean()
+
+    rmses = [rmse(df, prediction) for df, prediction in 
+                        zip([testing_df, uphill_test_df, downhill_test_df], predictions)]
+    return rmses
