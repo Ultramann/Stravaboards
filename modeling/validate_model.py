@@ -36,7 +36,8 @@ def evaluate_latent_feature_correlations(df, segment_ratings):
     segment_df = df.groupby('segment_id').first()
 
     # Join segment info with the latent feature ratings for each segment
-    segment_correlation = segment_df.merge(segment_ratings, right_index=True, 
+    segment_correlation = segment_df.merge(segment_ratings, 
+                                           right_index=True, 
                                            left_index=True)[segment_columns].corr()
 
     # Return just the rating columns from the correlation df
