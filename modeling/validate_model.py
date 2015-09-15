@@ -75,26 +75,20 @@ def testing_rmse(models, testing_df):
     Get the root mean squared error for the test data's predicted values from the models for the
     total testing df and the respective subsets.
     '''
-    segment_types = ['total', 'uphill', 'downhill']
+    # Get all subset dfs from testing df
+    dfs_for_test = cm.get_dfs_for_model(testing_df, models.keys())
 
-    # Subset testing df into up/downhill based on segment grade
-    uphill_test_df = testing_df.query('seg_average_grade > 0')
-    downhill_test_df = testing_df.query('seg_average_grade < 0')
-
-    # Make SFrames out of all dfs
-    tot_test_agg_sf = cm.get_agg_sf(testing_df)
-    uh_test_agg_sf = cm.get_agg_sf(uphill_test_df)
-    dh_test_agg_sf = cm.get_agg_sf(downhill_test_df)
+    # Get all subset sfs from testing df
+    sfs_for_test = cm.get_sfs_for_model(testing_df, models.keys())
 
     # Predict on testing data SFrame with model
     predictions = {name: np.array(models[name].predict(sf)) for name, sf in 
-                        zip(segment_types, [tot_test_agg_sf, uh_test_agg_sf, dh_test_agg_sf])}
+                   sfs_for_test.items()}
 
     # Calculate root mean squared error between actual test data and predicted values from model
     def rmse(df, prediction):
         agg_df = df.groupby(['athlete_id', 'segment_id']).mean().average_speed
         return (((agg_df.values - prediction) ** 2) ** 0.5).mean()
 
-    rmses = {name: rmse(df, predictions[name]) for name, df in 
-                zip(segment_types, [testing_df, uphill_test_df, downhill_test_df])}
+    rmses = {name: rmse(df, predictions[name]) for name, df in dfs_for_test.items()}
     return rmses

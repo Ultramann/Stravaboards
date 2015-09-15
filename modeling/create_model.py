@@ -78,39 +78,55 @@ def get_latent_features(agg_sf, number_latent_features):
 
     return athlete_ratings, segment_ratings, model
 
-def df_to_latent_features(df, number_latent_features=1):
+def get_dfs_for_model(df, segment_type_names):
+    '''
+    Input: Full DataFrame for total model, list of subset types to return
+    Output: Dictionary of subset name, corresponding subsetted df pairs
+    '''
+    # Types of segments to classify
+    subset_querys_dict = {'total': None, 
+                          'uphill': 'seg_average_grade > 0', 
+                          'downhill': 'seg_average_grade < 0'}
+    
+    # Get dictionary of queried df, by query string if query string is present, otherwise total df
+    return {name: df.query(subset_querys_dict[name]) if subset_querys_dict[name] else df 
+            for name in segment_type_names}
+
+def get_sfs_for_model(df, segment_type_names):
+    '''
+    Input: Full DataFrame to be subsetted and turned into SFrames from modeling, list of subset types
+           to return
+    Output: Dictionary of subset name, corresponding subsetted sf pairs
+    '''
+    # Get subsetted dfs for model dict
+    dfs_for_model = get_dfs_for_model(df, segment_type_names)
+    return {name: get_agg_sf(df) for name, df in dfs_for_model.items()}
+
+def df_to_latent_features(df, number_latent_features=1, 
+                          segment_type_names = ['total', 'uphill', 'downhill']):
     '''
     Input: DataFrame with observations for model to be trained on, 
            Number of latent features for model to decompose data into
     Output: DataFrame of athlete_ratings, DataFrame of segment_ratings, Fitted GraphLab model
     '''
-    # Types of segments to classify
-    segment_types = ['total', 'uphill', 'downhill']
-
-    # Subset total df into up/downhill based on segment grade
-    uphill_df = df.query('seg_average_grade > 0')
-    downhill_df = df.query('seg_average_grade < 0')
-
-    # Make SFrames out of all dfs
-    tot_agg_sf = get_agg_sf(df)
-    uh_agg_sf = get_agg_sf(uphill_df)
-    dh_agg_sf = get_agg_sf(downhill_df)
+    # Get all the SFrames for the subsets of the df corresponding with types list
+    sfs_for_model = get_sfs_for_model(df, segment_type_names)
 
     # Get all ratings dfs and models in a dictionary
-    rankings_dict = {name: get_latent_features(sf, number_latent_features) for name, sf in
-                            zip(segment_types, [tot_agg_sf, uh_agg_sf, dh_agg_sf])}
+    rankings_dict = {name: get_latent_features(sf, number_latent_features) 
+                     for name, sf in sfs_for_model.items()}
     
     # Make aggregate rankings dfs by concatenating rankings from all models together
     athlete_ratings = pd.concat([pd.Series(rankings_dict[name][0].rating_1, 
                                            name='{}_rating'.format(name))
-                                 for name in segment_types], 
+                                 for name in segment_type_names], 
                                 axis=1)
     segment_ratings = pd.concat([pd.Series(rankings_dict[name][1].rating_1, 
                                            name='{}_rating'.format(name))
-                                 for name in segment_types], 
+                                 for name in segment_type_names], 
                                 axis=1)
 
     # Make dictionary of models for each segment type
-    models = {name: rankings_dict[name][2] for name in segment_types}
+    models = {name: rankings_dict[name][2] for name in segment_type_names}
 
     return athlete_ratings, segment_ratings, models
