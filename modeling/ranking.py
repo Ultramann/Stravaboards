@@ -81,7 +81,7 @@ class Leaderboards(object):
         orientation = self.get_orientation(scaled_ratings_column, rating_column)
 
         # Make sure that the ratings are correctly oriented
-        scaled_ratings_column *= self.orientations[rating_column]
+        scaled_ratings_column *= orientation
 
         # Add the magnitude of the minimum rating to all, columnwise
         scaled_ratings_column -= scaled_ratings_column.min()
