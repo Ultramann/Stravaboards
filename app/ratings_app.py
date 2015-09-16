@@ -7,20 +7,20 @@ app = Flask(__name__)
 @app.route('/leaderboards')
 def display_leaderboards():
     # Make leaderboard list from csvs
-    app_data = '../app_data/'
+    app_data = './app_data/'
     csv_list = os.listdir(app_data)
-    leaderboards = [pd.read_csv(app_data + file_name) for file_name in csv_list]
 
-    # Turn df list into nparray list
-    #npa_leaderboards = [df_leaderboard.reset_index().values for df_leaderboard in df_leaderboards]
+    # Turn csvs into dfs into nparray list
+    np_leaderboards = [pd.read_csv(app_data + file_name).values for file_name in csv_list]
 
     # Make list of leaderboard lists with correct data types
-    #leaderboards = [[[int(row[0]), int(row[1]), round(float(row[2]), 3)] for row in leaderboard] 
-    #                                                            for leaderboard in npa_leaderboards]
+    leaderboards = [[[int(row[0]), int(row[1]), round(float(row[2]), 3)] 
+                      for row in leaderboard] 
+                     for leaderboard in np_leaderboards]
 
+    leaderboard_names = [name[:-16].replace('_', ' ').title() for name in csv_list]
     return render_template('leaderboards.html', 
-                            leaderboards_and_names=zip(leaderboards, 
-                                                       [name[:-13] for name in csv_list]))
+                            leaderboards_and_names=zip(leaderboards, leaderboard_names))
 
 if __name__ == '__main__':
     app.run(debug=True)
