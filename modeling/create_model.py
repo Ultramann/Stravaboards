@@ -1,6 +1,11 @@
 import graphlab as gl
 import pandas as pd
 
+# Types of segments to classify
+subset_querys_dict = {'total': None, 
+                      'uphill': 'seg_average_grade > 0', 
+                      'downhill': 'seg_average_grade < 0'}
+    
 def get_agg_sf(df):
     '''
     Input: DataFrame with data to create model from
@@ -83,11 +88,6 @@ def get_dfs_for_model(df, segment_type_names):
     Input: Full DataFrame for total model, list of subset types to return
     Output: Dictionary of subset name, corresponding subsetted df pairs
     '''
-    # Types of segments to classify
-    subset_querys_dict = {'total': None, 
-                          'uphill': 'seg_average_grade > 0', 
-                          'downhill': 'seg_average_grade < 0'}
-    
     # Get dictionary of queried df, by query string if query string is present, otherwise total df
     return {name: df.query(subset_querys_dict[name]) if subset_querys_dict[name] else df 
             for name in segment_type_names}
