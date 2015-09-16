@@ -1,12 +1,18 @@
 import numpy as np
 import pandas as pd
+import validate_model as vm
 
 class Leaderboards(object):
-    def __init__(self, average_speeds):
+    def __init__(self, training_df, segment_ratings):
         '''
-        Input:  Pandas Series of average speed for each athlete
+        Input:  DataFrame models were trained on, and segment ratings from models
         '''
-        self.average_speeds = average_speeds
+        rating_corrs_df = vm.evaluate_latent_feature_correlations(training_df, segment_ratings)
+        segment_corr_dict = rating_corrs_df.T.to_dict()['seg_average_grade']
+        alter_o_dict = {'total_rating': 1, 'uphill_rating': -1, 'downhill_rating': 1}
+        self.orientations = {key: 1 * alter_o_dict[key] if value >= 0 
+                                                        else -1 * alter_o_dict[key]
+                             for key, value in segment_corr_dict.items()}
 
     def store(self, ratings_df, board_size=20):
         '''
@@ -41,7 +47,7 @@ class Leaderboards(object):
 
     def get_n_leaders(self, rating_column):
         '''
-        Input: Column from user latent feature (rating) matrix
+        Input:  Column from user latent feature (rating) matrix
         Output: DataFrame of top n leaders and their ratings for input column
         '''
         # Get the indicies of the sorted scaled ratings
@@ -76,12 +82,8 @@ class Leaderboards(object):
         # Make np array of those athletes columns ratings
         scaled_ratings_column = self.scaled_ratings.ix[athletes][rating_column]
     
-        # Figure out the orentation of ratings scale
-        correlation_matrix = np.corrcoef(scaled_ratings_column, self.average_speeds[athletes].values)
-        orientation = 1 if correlation_matrix[0][1] < 0 else -1
-
         # Make sure that the ratings are correctly oriented
-        scaled_ratings_column *= orientation
+        scaled_ratings_column *= self.orientations[rating_column]
 
         # Add the magnitude of the minimum rating to all, columnwise
         scaled_ratings_column -= scaled_ratings_column.min()
