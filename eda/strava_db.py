@@ -31,6 +31,7 @@ class EffortDfGetter(object):
         self.engineer_features()
         self.remove_useless_rows()
         self.remove_useless_columns()
+        self.remove_outliers()
 
     def get_df_from_json(self):
         '''
@@ -116,3 +117,29 @@ class EffortDfGetter(object):
         
         # Drop all the useless columns
         self.df.drop(columns, inplace=True, axis=1)
+
+    def remove_outliers(self):
+        '''
+        Function to remove 6 signma outliers for average speed on a hill direction-wise basis
+        '''
+        # Up/dhill queries
+        queries = {'uphill': 'seg_average_grade >= 0', 'downhill': 'seg_average_grade < 0'}
+
+        # Subset df into up/dhill segment
+        uphill = self.df.query(queries['uphill'])
+        dhill = self.df.query(queries['downhill'])
+
+        # Get mean and std of avgerage_speed for each subset 
+        uh_mean = uphill.average_speed.mean()
+        uh_std = uphill.average_speed.std()
+
+        dh_mean = dhill.average_speed.mean()
+        dh_std = dhill.average_speed.std()
+
+        # Make inlier subsets
+        uh_inliers = uphill.query('@uh_mean - 3 * @uh_std < average_speed < @uh_mean + 3 * @uh_std')
+        dh_inliers = dhill.query('@dh_mean - 3 * @dh_std < average_speed < @dh_mean + 3 * @dh_std')
+
+        # Set df to concatination of inlier dfs
+        self.df = pd.concat([uh_inliers, dh_inliers], ignore_index=True)
+
