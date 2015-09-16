@@ -5,28 +5,30 @@ import create_model as cm
 class Leaderboards(object):
     def __init__(self, speeds):
         '''
-        Input:  Dataframe of athlete_id, average speed, and seg_average_grade
+        Input:  Dataframe of segment_id, athlete_id, average speed, and seg_average_grade
         '''
         self.speeds = speeds
 
-    def store(self, ratings_df, board_size=20):
+    def store(self, board_type, ratings_df, board_size=20):
         '''
         Input:  DataFrame of ratings, size of leaderboards
         Output: None
         
         Store each of the leaderboards from the leaderboard list from get in app_data folder as csvs
         '''
-        leaderboards = self.get(ratings_df, board_size)
+        leaderboards = self.get(board_size, ratings_df, board_size)
         for key in leaderboards.keys():
-            leaderboards[key].to_csv('../app/app_data/{}_leaderboard.csv'.format(key))
+            leaderboards[key].to_csv('../app/app_data/{}_{}_leaderboard.csv'.format(board_type, key))
 
-    def get(self, ratings_df, board_size=20):
+    def get(self, board_type, ratings_df, board_size=20):
         '''
         Input:  DataFrame of ratings, size of leaderboards
         Output: List of DataFrames with the top n_leaders ratings and their rank 
                 for each latent feature
         '''
         # Store the Dataframe of ratings and requested leaderboard size
+        self.board_type = board_type
+        self.board_direction = 1 if board_type == 'athlete' else -1
         self.ratings = ratings_df
         self.board_size = -1 if board_size == 'all' else board_size
 
@@ -81,7 +83,7 @@ class Leaderboards(object):
         orientation = self.get_orientation(scaled_ratings_column, rating_column)
 
         # Make sure that the ratings are correctly oriented
-        scaled_ratings_column *= orientation
+        scaled_ratings_column *= orientation * self.board_direction
 
         # Add the magnitude of the minimum rating to all, columnwise
         scaled_ratings_column -= scaled_ratings_column.min()
@@ -107,11 +109,12 @@ class Leaderboards(object):
         # Subset scaled_ratings_column
         avg_speed_subset = self.speeds.query(subset_query) if subset_query else self.speeds
 
-        # Group avg_speed_subset by athlete
-        athlete_mean_speed = avg_speed_subset.groupby('athlete_id').average_speed.mean()
+        # Group avg_speed_subset by board_type
+        type_mean_speed = avg_speed_subset.groupby('{}_id'.format(self.board_type)) \
+                                                  .average_speed.mean()
 
-        # "Best" athlete by rating in scaled_ratings_column
+        # "Best" board_type by rating in scaled_ratings_column
         best = scaled_ratings_column.idxmax()
 
-        return 1 if athlete_mean_speed.ix[best] > athlete_mean_speed.mean() else -1
+        return 1 if type_mean_speed.ix[best] > type_mean_speed.mean() else -1
 
