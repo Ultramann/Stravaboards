@@ -1,13 +1,14 @@
 import pickle
 import numpy as np
 import pandas as pd
+import create_model as cm
 
 class Leaderboards(object):
-    def __init__(self, average_speeds):
+    def __init__(self, speeds):
         '''
-        Input:  Pandas Series of average speed for each athlete
+        Input:  Dataframe of athlete_id, average speed, and seg_average_grade
         '''
-        self.average_speeds = average_speeds
+        self.speeds = speeds
 
     def store(self, ratings_df, board_size=20):
         '''
@@ -42,7 +43,7 @@ class Leaderboards(object):
 
     def get_n_leaders(self, rating_column):
         '''
-        Input: Column from user latent feature (rating) matrix
+        Input:  Column from user latent feature (rating) matrix
         Output: DataFrame of top n leaders and their ratings for input column
         '''
         # Get the indicies of the sorted scaled ratings
@@ -66,7 +67,7 @@ class Leaderboards(object):
 
     def scale_column_ratings(self, rating_column):
         '''
-        Input: DataFrame of latent features (ratings)
+        Input:  DataFrame of latent features (ratings)
         Output: Copy of ratings 
 
         Scales ratings from current to 0 - 100, by column
@@ -78,8 +79,7 @@ class Leaderboards(object):
         scaled_ratings_column = self.scaled_ratings.ix[athletes][rating_column]
     
         # Figure out the orentation of ratings scale
-        correlation_matrix = np.corrcoef(scaled_ratings_column, self.average_speeds[athletes].values)
-        orientation = 1 if correlation_matrix[0][1] < 0 else -1
+        orientation = self.get_orientation(scaled_ratings_column, rating_column)
 
         # Make sure that the ratings are correctly oriented
         scaled_ratings_column *= orientation
@@ -93,3 +93,26 @@ class Leaderboards(object):
         # Set the newly scaled column values back into the scaled df
         self.scaled_ratings[rating_column] = scaled_ratings_column
         self.scaled_ratings[rating_column].fillna(-1, inplace=True)
+
+    def get_orientation(self, scaled_ratings_column, rating_column):
+        '''
+        Input: Ratings column pandas series, name of column to check orientation
+        Output: 1 or -1 depending on how a rating scale is oriented
+        '''
+        # Get correct name from rating_column to index into subset_querys_dict with
+        dict_name = rating_column[:-7]
+
+        # Get corresponding query
+        subset_query = cm.subset_querys_dict[dict_name]
+
+        # Subset scaled_ratings_column
+        avg_speed_subset = self.speeds.query(subset_query) if subset_query else self.speeds
+
+        # Group avg_speed_subset by athlete
+        athlete_mean_speed = avg_speed_subset.groupby('athlete_id').average_speed.mean()
+
+        # "Best" athlete by rating in scaled_ratings_column
+        best = scaled_ratings_column.idxmax()
+
+        return 1 if athlete_mean_speed.ix[best] > athlete_mean_speed.mean() else -1
+
