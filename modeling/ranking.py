@@ -16,7 +16,7 @@ class Leaderboards(object):
         
         Store each of the leaderboards from the leaderboard list from get in app_data folder as csvs
         '''
-        leaderboards = self.get(board_size, ratings_df, board_size)
+        leaderboards = self.get(board_type, ratings_df, board_size)
         for key in leaderboards.keys():
             leaderboards[key].to_csv('../app/app_data/{}_{}_leaderboard.csv'.format(board_type, key))
 
@@ -28,7 +28,7 @@ class Leaderboards(object):
         '''
         # Store the Dataframe of ratings and requested leaderboard size
         self.board_type = board_type
-        self.board_direction = 1 if board_type == 'athlete' else -1
+        self.board_direction = -1 if board_type == 'athlete' else 1
         self.ratings = ratings_df
         self.board_size = -1 if board_size == 'all' else board_size
 
