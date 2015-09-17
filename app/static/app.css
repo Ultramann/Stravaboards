@@ -1,0 +1,33 @@
+h3.title {
+    color: rgb(41, 101, 168);
+}
+div.header {
+    padding-bottom: 25px;
+}
+div.jumbotron {
+    padding-top: 50px;
+}
+div.jumbotron_bg {
+    padding: 50px 50px 20px 50px;
+    border-radius: 15px;
+    background-image: url(http://bikesherpa.com.s3.amazonaws.com/img/Tour/620x/db6d22ca7a9f8843834fd11458ebddd9.jpg);
+    background-size: 100% 100%;
+    background-repeat: no-repeat;
+}
+div.leaderboard {
+    float: left;
+    padding-right: 50px;
+    padding-left: 45px;
+}
+td {
+    padding-right: 50px;
+}
+th {
+    padding-right: 20px;
+}
+th.rank {
+    color: rgb(41, 101, 168);
+}
+li {
+    color: yellow;
+}
