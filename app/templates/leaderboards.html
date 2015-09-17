@@ -12,39 +12,45 @@
         <div class="header">
             <nav>
                 <ul class="nav nav-pills pull-right">
-                    <li role="presentation"><a href="/">Home</a>
-                    </li>
-                    <li role="presentation"><a href="#">About</a>
-                    </li>
-                    <li role="presentation" class="active"><a href="#">Leaderboards</a>
-                    </li>
-                    <li role="presentation"><a href="difficulty-boards">Difficulty-boards</a>
-                    </li>
+                    <li role="presentation"><a href="/">Home</a></li>
+                    <li role="presentation"><a href="#">About</a></li>
+                    <li role="presentation" class="active"><a href="#">Leaderboards</a></li>
+                    <li role="presentation"><a href="heinousboards">Heinousboards</a></li>
                 </ul>
             </nav>
             <h3 class="title">StravaBoards</h3>
         </div>
+
+        <h1 align="center">Most Badass Athletes</h1>
+        <br> </br>
+
         <div class="jumbotron container">
             {% for leaderboard, name in leaderboards_and_names %}
-            <div class="leaderboard">
-                <h3 class="title"> {{ name }} </h3>
-                <table>
-                    <thead>
-                        <th>Rank</th>
-                        <th>User</th>
-                        <th>Rating</th>
-                    </thead>
+            <div class="board_container">
+                <div class="board">
+                    {% if 'Total' in name %}
+                    <h3 class="total_title"> {{ name }} </h3>
+                    {% else %} 
+                    <h3 class="title"> {{ name }} </h3>
+                    {% endif %}
+                    <table>
+                        <thead>
+                            <th>Rank</th>
+                            <th>Athlete</th>
+                            <th>Rating</th>
+                        </thead>
 
-                    <tbody>
-                        {% for row in leaderboard %}
-                        <tr>
-                            <th class='rank'> {{ row[0] }} </th>
-                            <td> {{ row[1] }} </td>
-                            <td> {{ row[2] }} </td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
+                        <tbody>
+                            {% for row in leaderboard %}
+                            <tr>
+                                <th class="rank"> {{ row[0] }} </th>
+                                <td> {{ row[1] }} </td>
+                                <td class="last"> {{ row[2] }} </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
             </div>
             {% endfor %}
         </div>

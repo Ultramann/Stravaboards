@@ -36,7 +36,7 @@ def display_leaderboards():
     return render_template('leaderboards.html', 
                             leaderboards_and_names=zip(leaderboards, leaderboard_names))
 
-@app.route('/difficulty-boards')
+@app.route('/heinousboards')
 def display_diffboards():
     # Turn athlete csvs into dfs into nparray list
     np_diffboards = get_np_board(segment_csv_list)
