@@ -120,26 +120,29 @@ class EffortDfGetter(object):
 
     def remove_outliers(self):
         '''
-        Function to remove 6 signma outliers for average speed on a hill direction-wise basis
+        Function to remove 6 signma outliers for average speed on a segment-wise basis
+
+        Concatenated together all of the efforts that have average speeds within 3 sigma of the
+        mean speed for their respective segments
         '''
-        # Up/dhill queries
-        queries = {'uphill': 'seg_average_grade >= 0', 'downhill': 'seg_average_grade < 0'}
+        segments = list(self.df.segment_id.unique())
+        self.df = pd.concat([self.get_inliers(segment) for segment in segments], ignore_index=True)
 
-        # Subset df into up/dhill segment
-        uphill = self.df.query(queries['uphill'])
-        dhill = self.df.query(queries['downhill'])
+    def get_inliers(self, segment):
+        '''
+        Function to remove 6 sigma outliers for average speed for a given segment
+        Input:  Segment ID
+        '''
+        # Just the specified segments from the full df
+        segment_subset = self.df.query('segment_id == @segment')
 
-        # Get mean and std of avgerage_speed for each subset 
-        uh_mean = uphill.average_speed.mean()
-        uh_std = uphill.average_speed.std()
+        # Calculate the mean and standard deviation for average_speed on that segment
+        sp_mean = segment_subset.average_speed.mean()
+        sp_std = segment_subset.average_speed.std()
 
-        dh_mean = dhill.average_speed.mean()
-        dh_std = dhill.average_speed.std()
+        # Query string for getting efforts that have speeds within 3 sigma of the mean
+        inlier_query = '@sp_mean - 1.5 * @sp_std < average_speed < @sp_mean + 1.5 * @sp_std'
 
-        # Make inlier subsets
-        uh_inliers = uphill.query('@uh_mean - 3 * @uh_std < average_speed < @uh_mean + 3 * @uh_std')
-        dh_inliers = dhill.query('@dh_mean - 3 * @dh_std < average_speed < @dh_mean + 3 * @dh_std')
-
-        # Set df to concatination of inlier dfs
-        self.df = pd.concat([uh_inliers, dh_inliers], ignore_index=True)
-
+        # Return only those efforts within the speed requirements
+        segment_inliers = segment_subset.query(inlier_query) 
+        return segment_inliers
