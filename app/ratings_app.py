@@ -10,13 +10,25 @@ athlete_csv_list = [l for l in csv_list if 'athlete' in l]
 segment_csv_list = [l for l in csv_list if 'segment' in l]
 
 def get_np_board(csv_list):
+    '''
+    Function to create list of numpy arrays for each board
+    Input:  List of csv file names where board info is
+    '''
     return [pd.read_csv(app_data + file_name).values for file_name in csv_list]
 
 def get_boards(np_boards):
+    '''
+    Function to format information in numpy array version of boards into a list
+    Input:  List of numpy arrays
+    Output: List of lists with items properly formatted for html page
+    '''
     return [[[int(row[0]), int(row[1]), round(float(row[2]), 3)] for row in board] 
               for board in np_boards]
 
 def get_board_names(csv_list, board_name):
+    '''
+    Function to turn list of csv file names into list of board names
+    '''
     return [name.strip('leaderboard.csv').strip(board_name).replace('_', ' ').title() 
             for name in csv_list]
 
