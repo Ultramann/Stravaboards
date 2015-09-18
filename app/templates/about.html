@@ -12,24 +12,24 @@
     <div class="row marketing">
         <div class="col-lg-6">
             <h4>Data Collection</h4>
-            <p>Harnessing the power of matrix decomposition the model objective rates both segments and athletes by difficulty and ability, respectively.</p>
+            <p>Using Strava's API and effort explorer in their online dashboard, all historical efforts from a selection of over 100 high traffic, non-commuter, segments were collected to make up a test effort database of nearly 2 million efforts by over 32,000 unique riders.</p>
 
             <h4>Model Selection</h4>
-            <p>By assuming no underlying qualities about the athletes and segments, this unsupervised model detects rider ability and segment difficulty in an intellegent way.</p>
+            <p>Given that a full matrix of athlete-segment efforts would be rather sparse and that the nature of the data necessitates an unsupervised model, using singular value decomposition to uncover latent qualities of athlete ability and segment difficulty.</p>
 
             <h4>Leaderboard Production</h4>
-            <p>With this model, athletes can now compare themselves to others outside of a single segment's scope. Someone can now be crowned the KING of STRAVA!!!</p>
+            <p>Due to the nature of singular value decomposition, the orientation of the ratings for both the segment heinousboards and the athlete leaderboards must be determined and scaled properly so that they lie on an intuitive 0-100 scale.</p>
         </div>
 
         <div class="col-lg-6">
             <h4>EDA</h4>
-            <p>By looking at efforts for all segments and those subsetted into uphill and downhill the rating metrics apply to skill and difficulty within homogenous categories for accurate and useful comparisions.</p>
+            <p>With an effort database approximately 1.5 GB in size, a more powerful hardware was required to inspect the dataset. After setting up a compute optimized AWS EC2 instance that would allow me to inspect my data in Python Pandas.</p>
 
             <h4>Model Building</h4>
-            <p>Since the model is effectively a black box, I can't tell you, specifically, why any athlete is where they are on the leaderboard.</p>
+            <p>By using a state of the art matrix decomposition library in Dato's recommender engine the model considers, both, segments of all types and those with a positive and negative overall grade, uphill and downhill respectively, to decompose non-dense data into matrices of with a single latent feature corresponding with difficulty for segments and skill for athletes.</p>
 
             <h4>Things and Stuff</h4>
-            <p>Novel way to for Strava athletes to compare their ability to others.</p>
+            <p>What could be better than things and stuff?</p>
         </div>
     </div>
 {% endblock %}
