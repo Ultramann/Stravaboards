@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+ 
+<head>
+    <title>Strava Rating App</title>
+    <link href="http://getbootstrap.com/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="http://getbootstrap.com/examples/jumbotron/jumbotron.css" rel="stylesheet">
+    <link href="../static/app.css" rel="stylesheet">
+</head>
+ 
+<body>
+    <div class="container">
+        <div class="header">
+            <nav>
+                <ul class="nav nav-pills pull-right">
+                    <li role="presentation" {% if request.path == '/' %} class="active" {% endif %}>
+                        <a href="/">Home</a>
+                    </li>
+                    <li role="presentation" 
+                        {% if request.path == 'about' %} class="active" {% endif %}>
+                        <a href="#">About</a></li>
+                    <li role="presentation" 
+                        {% if request.path == 'leaderboards' %} class="active" {% endif %}>
+                        <a href="leaderboards">Leaderboards</a>
+                    </li>
+                    <li role="presentation"
+                        {% if request.path == 'heinousboards' %} class="active" {% endif %}>
+                        <a href="heinousboards">Heinousboards</a></li>
+                </ul>
+            </nav>
+            <h3 class="title">StravaBoards</h3>
+        </div>
+
+        {% block body %} {% endblock %}
+
+        <br> </br> 
+        <footer class="footer">
+            <p>&copy; Ultramann 2015</p>
+        </footer>
+
+    </div>
+</body>
+ 
+</html>
