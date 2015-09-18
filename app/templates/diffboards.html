@@ -1,58 +1,40 @@
-<!doctype html>
-<html>
-<head>
-    <title>Leaderboards</title>
-    <link href="http://getbootstrap.com/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="http://getbootstrap.com/examples/jumbotron/jumbotron.css" rel="stylesheet">
-    <link href="../static/app.css" rel="stylesheet">
-</head>
+{% extends "base.html" %}
+{% block body %}
+    <h1 align="center">Most Difficult Segments</h1>
+    <br> </br>
 
-<body>
-    <div class="container">
-        <div class="header">
-            <nav>
-                <ul class="nav nav-pills pull-right">
-                    <li role="presentation"><a href="/">Home</a></li>
-                    <li role="presentation"><a href="#">About</a></li>
-                    <li role="presentation"><a href="leaderboards">Leaderboards</a></li>
-                    <li role="presentation" class='active'><a href="#">Heinousboards</a></li>
-                </ul>
-            </nav>
-            <h3 class="title">StravaBoards</h3>
-        </div>
+    <div class="jumbotron container">
+        {% for diffboard, name in diffboards_and_names %}
+        <div class="board_container">
+            <div class="board">
+                {% if 'Total' in name %}
+                <h3 class="total_title"> {{ name }} </h3>
+                {% else %} 
+                <h3 class="title"> {{ name }} </h3>
+                {% endif %}
+                <table>
+                    <thead>
+                        <th>Rank</th>
+                        <th>Segment</th>
+                        <th>Rating</th>
+                    </thead>
 
-        <h1 align="center">Most Difficult Segments</h1>
-        <br> </br>
-
-        <div class="jumbotron container">
-            {% for diffboard, name in diffboards_and_names %}
-            <div class="board_container">
-                <div class="board">
-                    {% if 'Total' in name %}
-                    <h3 class="total_title"> {{ name }} </h3>
-                    {% else %} 
-                    <h3 class="title"> {{ name }} </h3>
-                    {% endif %}
-                    <table>
-                        <thead>
-                            <th>Rank</th>
-                            <th>Segment</th>
-                            <th>Rating</th>
-                        </thead>
-
-                        <tbody>
-                            {% for row in diffboard %}
-                            <tr>
-                                <th class='rank'> {{ row[0] }} </th>
-                                <td> {{ row[1] }} </td>
-                                <td class='last'> {{ row[2] }} </td>
-                            </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
-                </div>
+                    <tbody>
+                        {% for row in diffboard %}
+                        <tr>
+                            <th class='rank'> {{ row[0] }} </th>
+                            <td>
+                                <a href="https://www.strava.com/segments/{{ row[1] }}">
+                                    {{ row[1] }}
+                                </a> 
+                            </td>
+                            <td class='last'> {{ row[2] }} </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
             </div>
-            {% endfor %}
         </div>
-</body>
-</html>
+        {% endfor %}
+    </div>
+{% endblock %}

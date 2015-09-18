@@ -1,65 +1,35 @@
-<!DOCTYPE html>
-<html lang="en">
- 
-<head>
-    <title>Strava Rating App</title>
-    <link href="http://getbootstrap.com/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="http://getbootstrap.com/examples/jumbotron/jumbotron.css" rel="stylesheet">
-    <link href="../static/app.css" rel="stylesheet">
-</head>
- 
-<body>
-    <div class="container">
-        <div class="header">
-            <nav>
-                <ul class="nav nav-pills pull-right">
-                    <li role="presentation" class="active"><a href="#">Home</a></li>
-                    <li role="presentation"><a href="#">About</a></li>
-                    <li role="presentation"><a href="leaderboards">Leaderboards</a></li>
-                    <li role="presentation"><a href="heinousboards">Heinousboards</a></li>
-                </ul>
-            </nav>
-            <h3 class="title">StravaBoards</h3>
+{% extends "base.html" %}
+{% block body %}
+    <div class="jumbotron_bg"> 
+        <div class="jumbotron">
+            <h1 align="center">Data Driven Strava Ratings</h1>
+            <p class="lead">Strava, a company that adds a social and gameful aspect to tracking pace based exercises, tracks user workouts via GPS, to determine what well defined paths, or segments, they completed. The metrics that Strava collects allow them to keep an updated leaderboard for users' performance on a segment-wise basis, but currently have no notion of an overall leaderboard. The difficulty of providing this service is certainly proportional to utility it would provide, as objectively comparing users who haven’t completed shared segments is mathematically challenging. My project focuses on providing the foundation for this service by demonstrating that comparing users across a range of segments is possible with the magic of linear algebra!!!</p>
+            </p>
         </div>
-
-        <div class="jumbotron_bg"> 
-            <div class="jumbotron">
-                <h1 align="center">Data Driven Strava Ratings</h1>
-                <p class="lead">Strava, a company that adds a social and gameful aspect to tracking pace based exercises, tracks user workouts via GPS, to determine what well defined paths, or segments, they completed. The metrics that Strava collects allow them to keep an updated leaderboard for users' performance on a segment-wise basis, but currently have no notion of an overall leaderboard. The difficulty of providing this service is certainly proportional to utility it would provide, as objectively comparing users who haven’t completed shared segments is mathematically challenging. My project focuses on providing the foundation for this service by demonstrating that comparing users across a range of segments is possible with the magic of linear algebra!!!</p>
-                </p>
-            </div>
-        </div>
-        <br> </br> 
-        <br> </br> 
-        <div class="row marketing">
-            <div class="col-lg-6">
-                <h4>Objective</h4>
-                <p>Harnessing the power of matrix decomposition the model objective rates both segments and athletes by difficulty and ability, respectively.</p>
- 
-                <h4>Unsupervised</h4>
-                <p>By assuming no underlying qualities about the athletes and segments, this unsupervised model detects rider ability and segment difficulty in an intellegent way.</p>
- 
-                <h4>Useful as all Getout</h4>
-                <p>With this model, athletes can now compare themselves to others outside of a single segment's scope. Someone can now be crowned the KING of STRAVA!!!</p>
-            </div>
- 
-            <div class="col-lg-6">
-                <h4>Unbiased</h4>
-                <p>By looking at efforts for all segments and those subsetted into uphill and downhill the rating metrics apply to skill and difficulty within homogenous categories for accurate and useful comparisions.</p>
- 
-                <h4>Magic</h4>
-                <p>Since the model is effectively a black box, I can't tell you, specifically, why any athlete is where they are on the leaderboard.</p>
- 
-                <h4>Things and Stuff</h4>
-                <p>Novel way to for Strava athletes to compare their ability to others.</p>
-            </div>
-        </div>
-
-        <br> </br> 
-        <footer class="footer">
-            <p>&copy; Ultramann 2015</p>
-        </footer>
     </div>
-</body>
- 
-</html>
+    <br> </br> 
+    <br> </br> 
+    <div class="row marketing">
+        <div class="col-lg-6">
+            <h4>Objective</h4>
+            <p>Harnessing the power of matrix decomposition the model objective rates both segments and athletes by difficulty and ability, respectively.</p>
+
+            <h4>Unsupervised</h4>
+            <p>By assuming no underlying qualities about the athletes and segments, this unsupervised model detects rider ability and segment difficulty in an intellegent way.</p>
+
+            <h4>Useful as all Getout</h4>
+            <p>With this model, athletes can now compare themselves to others outside of a single segment's scope. Someone can now be crowned the KING of STRAVA!!!</p>
+        </div>
+
+        <div class="col-lg-6">
+            <h4>Unbiased</h4>
+            <p>By looking at efforts for all segments and those subsetted into uphill and downhill the rating metrics apply to skill and difficulty within homogenous categories for accurate and useful comparisions.</p>
+
+            <h4>Magic</h4>
+            <p>Since the model is effectively a black box, I can't tell you, specifically, why any athlete is where they are on the leaderboard.</p>
+
+            <h4>Things and Stuff</h4>
+            <p>Novel way to for Strava athletes to compare their ability to others.</p>
+        </div>
+    </div>
+{% endblock %}
