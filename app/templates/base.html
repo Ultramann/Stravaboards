@@ -13,19 +13,22 @@
         <div class="header">
             <nav>
                 <ul class="nav nav-pills pull-right">
-                    <li role="presentation" {% if request.path == '/' %} class="active" {% endif %}>
+                    <li role="presentation" 
+                        {% if request.path == '/' %} class="active" {% endif %}>
                         <a href="/">Home</a>
                     </li>
                     <li role="presentation" 
-                        {% if request.path == 'about' %} class="active" {% endif %}>
-                        <a href="about">About</a></li>
+                        {% if request.path == '/about' %} class="active" {% endif %}>
+                        <a href="about">About</a>
+                    </li>
                     <li role="presentation" 
-                        {% if request.path == 'leaderboards' %} class="active" {% endif %}>
+                        {% if request.path == '/leaderboards' %} class="active" {% endif %}>
                         <a href="leaderboards">Leaderboards</a>
                     </li>
-                    <li role="presentation"
-                        {% if request.path == 'heinousboards' %} class="active" {% endif %}>
-                        <a href="heinousboards">Heinousboards</a></li>
+                    <li role="presentation" 
+                        {% if request.path == '/heinousboards' %} class="active" {% endif %}>
+                        <a href="heinousboards">Heinousboards</a>
+                    </li>
                 </ul>
             </nav>
             <h3 class="title">StravaBoards</h3>
