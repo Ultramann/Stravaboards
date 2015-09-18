@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% block body %}
+    <div class="jumbotron_bg"> 
+        <div class="jumbotron">
+            <h1 align="center">Model Methodology</h1>
+            <p class="lead">By looking at a subset of the segments in Strava's database the model underlying StravaBoards demonstrates the power that Singular Value Decomposition has in finding latent information in sparsely populated datasets.</p>
+            </p>
+        </div>
+    </div>
+    <br> </br> 
+    <br> </br> 
+    <div class="row marketing">
+        <div class="col-lg-6">
+            <h4>Data Collection</h4>
+            <p>Harnessing the power of matrix decomposition the model objective rates both segments and athletes by difficulty and ability, respectively.</p>
+
+            <h4>Model Selection</h4>
+            <p>By assuming no underlying qualities about the athletes and segments, this unsupervised model detects rider ability and segment difficulty in an intellegent way.</p>
+
+            <h4>Leaderboard Production</h4>
+            <p>With this model, athletes can now compare themselves to others outside of a single segment's scope. Someone can now be crowned the KING of STRAVA!!!</p>
+        </div>
+
+        <div class="col-lg-6">
+            <h4>EDA</h4>
+            <p>By looking at efforts for all segments and those subsetted into uphill and downhill the rating metrics apply to skill and difficulty within homogenous categories for accurate and useful comparisions.</p>
+
+            <h4>Model Building</h4>
+            <p>Since the model is effectively a black box, I can't tell you, specifically, why any athlete is where they are on the leaderboard.</p>
+
+            <h4>Things and Stuff</h4>
+            <p>Novel way to for Strava athletes to compare their ability to others.</p>
+        </div>
+    </div>
+{% endblock %}
+

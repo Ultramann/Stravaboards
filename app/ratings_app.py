@@ -1,6 +1,6 @@
 import os
 import pandas as pd
-from flask import Flask, render_template #, request
+from flask import Flask, render_template
 app = Flask(__name__)
 
 # Make leaderboard list from csvs
@@ -35,6 +35,10 @@ def get_board_names(csv_list, board_name):
 @app.route('/')
 def display_home():
     return render_template('home.html')
+
+@app.route('/about')
+def display_about():
+    return render_template('about.html')
 
 @app.route('/leaderboards')
 def display_leaderboards():
