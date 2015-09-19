@@ -3,10 +3,10 @@
     <h1 align="center">Most Badass Athletes</h1>
     <br> </br>
 
-    <div class="jumbotron container">
+    <div class="jumbotron_bg container">
         {% for leaderboard, name in leaderboards_and_names %}
         <div class="board_container">
-            <div class="board">
+            <div class="board well">
                 {% if 'Total' in name %}
                 <h3 class="total_title"> {{ name }} </h3>
                 {% else %} 
