@@ -11,8 +11,9 @@
 <body>
     <div class="container">
         <div class="header">
-            <nav>
-                <ul class="nav nav-pills pull-right">
+            <nav class="navbar navbar-fixed-top">
+                <a class="navbar-brand" href="/"> StravaBoards </a>
+                <ul class="nav nav-pills navbar-right">
                     <li role="presentation" 
                         {% if request.path == '/' %} class="active" {% endif %}>
                         <a href="/">Home</a>
@@ -31,7 +32,6 @@
                     </li>
                 </ul>
             </nav>
-            <h3 class="title">StravaBoards</h3>
         </div>
 
         {% block body %} {% endblock %}
