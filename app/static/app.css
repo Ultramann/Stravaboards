@@ -1,14 +1,21 @@
+nav.navbar {
+    padding: 20px 50px 15px 25px;
+    background-color: white;
+    opacity: 0.96;
+}
 h3.total_title {
     color: rgb(229, 13, 40);
 }
 h3.title {
     color: rgb(41, 101, 168);
+    position: center;
 }
 div.header {
-    padding-bottom: 25px;
+    padding-bottom: 75px;
 }
 div.jumbotron {
     padding-top: 50px;
+    background-color: white;
 }
 div.jumbotron_bg {
     padding: 50px 50px 20px 50px;
