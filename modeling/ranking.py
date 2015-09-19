@@ -107,7 +107,7 @@ class Leaderboards(object):
         subset_query = cm.subset_querys_dict[dict_name]
 
         # Total or not?
-        total = -1 if not subset_query and dict_name == 'segment' else 1
+        total = -1 if not subset_query and self.board_type == 'segment' else 1
 
         # Subset scaled_ratings_column
         avg_speed_subset = self.speeds.query(subset_query) if subset_query else self.speeds
