@@ -141,7 +141,7 @@ class EffortDfGetter(object):
         sp_std = segment_subset.average_speed.std()
 
         # Query string for getting efforts that have speeds within 3 sigma of the mean
-        inlier_query = '@sp_mean - 2 * @sp_std < average_speed < @sp_mean + 2 * @sp_std'
+        inlier_query = '@sp_mean - 3 * @sp_std < average_speed < @sp_mean + 3 * @sp_std'
 
         # Return only those efforts within the speed requirements
         segment_inliers = segment_subset.query(inlier_query) 
