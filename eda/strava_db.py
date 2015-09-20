@@ -1,4 +1,5 @@
 import json
+import numpy as np
 import pandas as pd
 from pymongo import MongoClient
 
@@ -31,7 +32,7 @@ class EffortDfGetter(object):
         self.engineer_features()
         self.remove_useless_rows()
         self.remove_useless_columns()
-        self.remove_outliers()
+        #self.remove_outliers()
 
     def get_df_from_json(self):
         '''
@@ -125,24 +126,42 @@ class EffortDfGetter(object):
         Concatenated together all of the efforts that have average speeds within 3 sigma of the
         mean speed for their respective segments
         '''
+        # Get list of segment-athlete pairs
         segments = list(self.df.segment_id.unique())
-        self.df = pd.concat([self.get_inliers(segment) for segment in segments], ignore_index=True)
+
+        # Get list of inlier dfs 
+        inlier_efforts = [self.get_inliers(segment) for segment in segments]
+        self.df = pd.concat(inlier_efforts, ignore_index=True)
 
     def get_inliers(self, segment):
         '''
-        Function to remove 6 sigma outliers for average speed for a given segment
+        Function to remove 6 sigma outliers for average speed for a given segment-athlete pair
         Input:  Segment ID
         '''
-        # Just the specified segments from the full df
-        segment_subset = self.df.query('segment_id == @segment')
+        # Just the efforts for the specified segment-athlete pair from the full df
+        segment_athlete_subset = self.df.query('segment_id == @segment')
 
-        # Calculate the mean and standard deviation for average_speed on that segment
-        sp_mean = segment_subset.average_speed.mean()
-        sp_std = segment_subset.average_speed.std()
+        # Calculate the mean and standard deviation for average_speed for that segment-athlete pair
+        sp_mean = segment_athlete_subset.average_speed.mean()
+        sp_std = segment_athlete_subset.average_speed.std()
 
         # Query string for getting efforts that have speeds within 3 sigma of the mean
         inlier_query = '@sp_mean - 3 * @sp_std < average_speed < @sp_mean + 3 * @sp_std'
 
         # Return only those efforts within the speed requirements
-        segment_inliers = segment_subset.query(inlier_query) 
-        return segment_inliers
+        segment_athlete_inliers = segment_athlete_subset if np.isnan(sp_std) else \
+                                  segment_athlete_subset.query(inlier_query)
+        return segment_athlete_inliers
+
+    def remove_outliers(group):
+        '''
+        Possible pandas groupby transform solution:
+        df.groupby(['segment_id', 'athlete_id']).tranform(remove_outliers)
+
+        Note: might be faster if somehow the function on the grouby object retured the indicies
+              of the efforts that are "outliers" so they can all be removed at once.
+        '''
+        mean, std = group.mean(), group.std()
+        outliers = (group - mean).abs() > 3 * std
+        inliers = group[~outliers]
+        return inliers
