@@ -156,4 +156,5 @@ class EffortDfGetter(object):
         # Set whole df to inliers without added columns
         added_columns = ['average_speed_ath_mean', 'average_speed_seg_mean', 
                          'average_speed_seg_std', 'predicted_speed']
-        self.df = new_df.drop(added_columns, axis=1, inplace=True)
+        self.df = inlier_df.drop(added_columns, axis=1)
+
