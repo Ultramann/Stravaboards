@@ -121,6 +121,21 @@ class EffortDfGetter(object):
 
     def remove_outliers(self):
         '''
+        Function to remove athlete effort outliers, as measured by their naively calculated expected
+        speed.
+        '''
+        # Averge speed per athlete
+        athlete_average_speed = self.df.groupby('athlete_id').average_speed.mean()
+
+        # Average speed and standard deviation per segment
+        segment_average_speed = self.df.groupby('segment_id').average_speed.mean()
+        segment_speed_std = self.df.groupby('segment_id').average_speed.std()
+
+        df = pd.merge(self.df, athlete_average_speed, left_on='athlete_id', 
+                      right_index=True, suffix=('', '_overall'))
+
+    def remove_outliers_old(self):
+        '''
         Function to remove 6 signma outliers for average speed on a segment-wise basis
 
         Concatenated together all of the efforts that have average speeds within 3 sigma of the
@@ -158,7 +173,7 @@ class EffortDfGetter(object):
         Possible pandas groupby transform solution:
         df.groupby(['segment_id', 'athlete_id']).tranform(remove_outliers)
 
-        Note: might be faster if somehow the function on the grouby object retured the indicies
+        Note: might be faster if somehow the function on the groupby object retured the indicies
               of the efforts that are "outliers" so they can all be removed at once.
         '''
         mean, std = group.mean(), group.std()
