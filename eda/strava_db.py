@@ -32,7 +32,7 @@ class EffortDfGetter(object):
         self.engineer_features()
         self.remove_useless_rows()
         self.remove_useless_columns()
-        #self.remove_outliers()
+        self.remove_outliers()
 
     def get_df_from_json(self):
         '''
@@ -125,58 +125,35 @@ class EffortDfGetter(object):
         speed.
         '''
         # Averge speed per athlete
-        athlete_average_speed = self.df.groupby('athlete_id').average_speed.mean()
+        athlete_average_speed = self.df.groupby('athlete_id', as_index=False).average_speed.mean()
 
         # Average speed and standard deviation per segment
-        segment_average_speed = self.df.groupby('segment_id').average_speed.mean()
-        segment_speed_std = self.df.groupby('segment_id').average_speed.std()
+        segment_average_speed = self.df.groupby('segment_id').average_speed.mean().reset_index()
+        segment_speed_std = self.df.groupby('segment_id').average_speed.std().reset_index()
 
-        df = pd.merge(self.df, athlete_average_speed, left_on='athlete_id', 
-                      right_index=True, suffix=('', '_overall'))
+        # Merge all those dfs together
+        df = pd.merge(self.df, athlete_average_speed, 
+                      on='athlete_id', 
+                      how='left', 
+                      suffixes=('', '_ath_mean'))
 
-    def remove_outliers_old(self):
-        '''
-        Function to remove 6 signma outliers for average speed on a segment-wise basis
+        df = pd.merge(df, segment_average_speed, 
+                      on='segment_id', 
+                      how='left', 
+                      suffixes=('', '_seg_mean'))
 
-        Concatenated together all of the efforts that have average speeds within 3 sigma of the
-        mean speed for their respective segments
-        '''
-        # Get list of segment-athlete pairs
-        segments = list(self.df.segment_id.unique())
+        df = pd.merge(df, segment_speed_std, 
+                      on='segment_id', 
+                      how='left', 
+                      suffixes=('', '_seg_std'))
 
-        # Get list of inlier dfs 
-        inlier_efforts = [self.get_inliers(segment) for segment in segments]
-        self.df = pd.concat(inlier_efforts, ignore_index=True)
+        # Make predicted speed column, average of athlete's average and segment's average
+        df.eval('predicted_speed = (average_speed_ath_mean + average_speed_seg_mean) / 2')
 
-    def get_inliers(self, segment):
-        '''
-        Function to remove 6 sigma outliers for average speed for a given segment-athlete pair
-        Input:  Segment ID
-        '''
-        # Just the efforts for the specified segment-athlete pair from the full df
-        segment_athlete_subset = self.df.query('segment_id == @segment')
+        # Inliers equal to only those efforts whoes average_speed are within 4 stds of predicted
+        inlier_df = df[np.abs(df.predicted_speed - df.average_speed) < 4 * df.average_speed_seg_std]
 
-        # Calculate the mean and standard deviation for average_speed for that segment-athlete pair
-        sp_mean = segment_athlete_subset.average_speed.mean()
-        sp_std = segment_athlete_subset.average_speed.std()
-
-        # Query string for getting efforts that have speeds within 3 sigma of the mean
-        inlier_query = '@sp_mean - 3 * @sp_std < average_speed < @sp_mean + 3 * @sp_std'
-
-        # Return only those efforts within the speed requirements
-        segment_athlete_inliers = segment_athlete_subset if np.isnan(sp_std) else \
-                                  segment_athlete_subset.query(inlier_query)
-        return segment_athlete_inliers
-
-    def remove_outliers(group):
-        '''
-        Possible pandas groupby transform solution:
-        df.groupby(['segment_id', 'athlete_id']).tranform(remove_outliers)
-
-        Note: might be faster if somehow the function on the groupby object retured the indicies
-              of the efforts that are "outliers" so they can all be removed at once.
-        '''
-        mean, std = group.mean(), group.std()
-        outliers = (group - mean).abs() > 3 * std
-        inliers = group[~outliers]
-        return inliers
+        # Set whole df to inliers without added columns
+        added_columns = ['average_speed_ath_mean', 'average_speed_seg_mean', 
+                         'average_speed_seg_std', 'predicted_speed']
+        self.df = new_df.drop(added_columns, axis=1, inplace=True)
