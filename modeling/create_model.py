@@ -38,7 +38,7 @@ def drop_useless_columns(dfs):
     Get rid of the columns that were turned into individual columns or were never useful
     '''
     for df in dfs:
-        df.drop(['factors', 'linear_terms'], axis=1, inplace=True)
+        df.drop(['factors'], axis=1, inplace=True)
 
 def get_clean_dfs_from_model(model, num_features):
     '''
@@ -77,6 +77,7 @@ def get_latent_features(agg_sf, number_latent_features):
                                                 linear_regularization=0,
                                                 solver='sgd',
                                                 max_iterations=100,
+                                                nmf=True,
                                                 num_factors=number_latent_features)
     # Turn fitted model into athlete_ratings df and segment_ratings df
     athlete_ratings, segment_ratings = get_clean_dfs_from_model(model, number_latent_features)
