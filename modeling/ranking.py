@@ -83,7 +83,7 @@ class Leaderboards(object):
         orientation = self.get_orientation(scaled_ratings_column, rating_column)
 
         # Make sure that the ratings are correctly oriented
-        scaled_ratings_column *= orientation * self.board_direction
+        scaled_ratings_column *= self.board_direction * orientation
 
         # Add the magnitude of the minimum rating to all, columnwise
         scaled_ratings_column -= scaled_ratings_column.min()
@@ -116,5 +116,5 @@ class Leaderboards(object):
         # "Best" board_type by rating in scaled_ratings_column
         best = scaled_ratings_column.idxmax()
 
-        return 1 if type_mean_speed.ix[best] > type_mean_speed.mean() else -1
+        return -1 if type_mean_speed.ix[best] > type_mean_speed.mean() else 1
 
