@@ -59,7 +59,7 @@ class Leaderboards(object):
 
         # Make new column, rank, ranging from 1 - n
         worst_rank = n_leaders_df.shape[0] if self.board_size == -1 else self.board_size
-        n_leaders_df['rank'] = range(1, self.board_size+1)
+        n_leaders_df['rank'] = range(1, worst_rank+1)
 
         # Set it to be the index
         n_leaders_df.set_index('rank', inplace=True)
@@ -92,8 +92,7 @@ class Leaderboards(object):
         scaled_ratings_column *= 100. / scaled_ratings_column.max() 
 
         # Set the newly scaled column values back into the scaled df
-        self.scaled_ratings[rating_column] = scaled_ratings_column
-        self.scaled_ratings[rating_column].fillna(-1, inplace=True)
+        self.scaled_ratings[rating_column] = scaled_ratings_column.dropna()
 
     def get_orientation(self, scaled_ratings_column, rating_column):
         '''
