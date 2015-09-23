@@ -51,12 +51,19 @@ class Leaderboards(object):
         good_ratings = self.scaled_ratings[rating_column].dropna()
         sorted_scaled_ratings_indices = np.argsort(good_ratings.values)
 
-        # We only want the top n athletes for the leaderboard
+        # We only want the top n leaders for the leaderboard
         top_n_indices = sorted_scaled_ratings_indices[-1:-self.board_size-1:-1]
         
-        # Grab the top n athletes and there rating_column stats
+        # Grab the top n leaders and their rating_column stats
         n_leaders = good_ratings.iloc[top_n_indices]
         n_leaders_df = n_leaders.reset_index()
+        
+        # Get those leaders average speeds
+        group = '{}_id'.format(self.board_type)
+        avg_speeds = self.speeds.groupby(group).average_speed.mean().reset_index()
+
+        # Join average speeds with leaderboard
+        n_leaders_df = pd.merge(n_leaders_df, avg_speeds, on=group, how='left')
 
         # Make new column, rank, ranging from 1 - n
         worst_rank = n_leaders_df.shape[0] if self.board_size == -1 else self.board_size
