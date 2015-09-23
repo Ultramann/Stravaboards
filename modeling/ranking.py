@@ -48,13 +48,14 @@ class Leaderboards(object):
         Output: DataFrame of top n leaders and their ratings for input column
         '''
         # Get the indicies of the sorted scaled ratings
-        sorted_scaled_ratings_indices = np.argsort(self.scaled_ratings[rating_column].values)
+        good_ratings = self.scaled_ratings[rating_column].dropna()
+        sorted_scaled_ratings_indices = np.argsort(good_ratings.values)
 
         # We only want the top n athletes for the leaderboard
         top_n_indices = sorted_scaled_ratings_indices[-1:-self.board_size-1:-1]
         
         # Grab the top n athletes and there rating_column stats
-        n_leaders = self.scaled_ratings.iloc[top_n_indices][rating_column]
+        n_leaders = good_ratings.iloc[top_n_indices]
         n_leaders_df = n_leaders.reset_index()
 
         # Make new column, rank, ranging from 1 - n
