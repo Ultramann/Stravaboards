@@ -22,7 +22,8 @@ def get_boards(np_boards):
     Input:  List of numpy arrays
     Output: List of lists with items properly formatted for html page
     '''
-    return [[[int(row[0]), int(row[1]), round(float(row[2]), 3)] for row in board] 
+    return [[[int(row[0]), int(row[1]), round(float(row[2]), 3), round(float(row[3]), 3)] 
+              for row in board] 
               for board in np_boards]
 
 def get_board_names(csv_list, board_name):
