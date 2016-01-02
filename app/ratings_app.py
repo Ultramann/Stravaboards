@@ -66,4 +66,4 @@ def display_diffboards():
                             diffboards_and_names=zip(diffboards, diffboard_names))
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=80)
+    app.run(host='0.0.0.0', port=8000)
