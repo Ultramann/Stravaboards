@@ -12,7 +12,7 @@ However, currently, Strava does not provide it's users with a way to compare the
 
 After collecting all historical effort data from Strava's API for a set of 109 segments to the north of San Fransisco (see figure below), chosen for their likelihood of not being commuter routes, and loading it all into a Mongo database the data was exported to JSON and moved to an AWS instance. On the remote machine it was possible to analyze the data with pandas on Amazon's powerful hardware.
 
-![Segment Locations](data_collection/segment_plot.png)
+![Segment Locations](images/segment_plot.png)
 
 The back-end of the of the model is a low-rank approximation non-negative matrix factorization (NMF). The selection of this model was given a great deal of thought. Returning to the motivating question: how you would objectively compare two athletes who aren't participating in the same workouts? A simple and extraordinarily naive proxy for skill could be speed in which a segment is completed. However, this interpretation of "skill" neglects the difference in difficulty that inherently lies between segments. Intuitively, one would want to attribute more skill to athletes that complete more difficult segments and complete the faster.
 
@@ -30,6 +30,8 @@ Matrix factorization techniques are, at their heart, unsupervised. This means th
 
 In order to achieve some notion of validation on an NMF model one one can leverage the fact that the act of matrix factorization allows for reconstruction of the original data, in a dense manner, as opposed to the sparse format that was fed into the model. Thus, the, so called, reconstituted
 matrix, formed by multiplying the low-rank matrices for the segments and athletes together can be compared to the original data matrix.
+
+![Correlation Validation](images/correlation_validation.png)
 
 ###Hurdles
 
