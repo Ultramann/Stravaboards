@@ -31,6 +31,10 @@ Matrix factorization techniques are, at their heart, unsupervised. This means th
 In order to achieve some notion of validation on an NMF model one one can leverage the fact that the act of matrix factorization allows for reconstruction of the original data, in a dense manner, as opposed to the sparse format that was fed into the model. Thus, the, so called, reconstituted
 matrix, formed by multiplying the low-rank matrices for the segments and athletes together can be compared to the original data matrix.
 
+Another important consideration I looked at when trying to determine the effectiveness of my model was looking at how athletes skill rating correlated with their total average speed. The basis for this comparison stems from the fact that, were we to try and assign skill based on speed alone we would be forced into a situation where we'd assume faster means more skillful. However, this interpretation of speed neglects the obvious fact that easier downhill segments naturally produce speed whereas hard uphill segments naturally deter speed production.
+
+So in looking at the scatter plots of my athletes assigned skill ranking from the NMF model versus their average speed (seen below) the correlation between these two measures, should be apparent but not perfect. This is because my model is finding athletes who are only riding hard segments, and therefore have a lower average speed, but are actually very skillful when compared across segments.
+
 ![Correlation Validation](images/correlation_validation.png)
 
 ###Hurdles
